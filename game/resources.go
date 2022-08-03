@@ -182,17 +182,14 @@ func (g *Game) loadSprites() {
 
 	// TODO: load mission sprites from yaml file
 
-	// mechImg := getSpriteFromFile("mechs/timberwolf.png")
-	// mechTemplate := model.NewMechSprite(0, 0, mechImg, 0.01)
+	mechImg := getSpriteFromFile("mechs/timberwolf.png")
+	mechTemplate := model.NewMechSprite(0, 0, mechImg, 0.01)
 
-	// // for i := 1.5; i <= 19.5; i++ {
-	// // 	for j := 16.0; j < 24; j++ {
-	// // 		mech := model.NewMechSpriteFromMech(i, j, mechTemplate)
-	// // 		g.addMechSprite(mech)
-	// // 	}
-	// // }
-	// mech := model.NewMechSpriteFromMech(5, 18, mechTemplate)
-	// g.addMechSprite(mech)
-	// mech2 := model.NewMechSpriteFromMech(7, 18, mechTemplate)
-	// g.addMechSprite(mech2)
+	// testing a couple of them
+	mech := model.NewMechSpriteFromMech(15, 18, mechTemplate)
+	g.sprites.addMechSprite(mech)
+
+	mech2 := model.NewMechSpriteFromMech(17, 18, mechTemplate)
+	mech2.SetAnimationFrame(3)
+	g.sprites.addMechSprite(mech2)
 }

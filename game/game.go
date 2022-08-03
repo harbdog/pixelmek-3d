@@ -548,8 +548,10 @@ func (g *Game) updateSprites() {
 		s.Update(g.player.Position)
 	}
 
-	// TODO: update mech sprites
-
+	// Testing animated mech sprite movement
+	for m := range g.sprites.mechSprites {
+		m.Update(g.player.Position)
+	}
 }
 
 func randFloat(min, max float64) float64 {

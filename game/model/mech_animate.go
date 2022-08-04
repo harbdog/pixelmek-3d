@@ -59,8 +59,8 @@ func NewMechAnimationSheetFromImage(srcImage *ebiten.Image) *MechSpriteAnimate {
 	// calculate number of animations (rows) and frames for each animation (cols)
 
 	// idle animation: only arms and torso limbs move, for now just going with 4% pixel movement for both
-	idlePxPerLimb := 0.04 * float64(uHeight)
-	idleCols := int(idlePxPerLimb) * 4 // x4 = up -> down -> down -> up (both arms only)
+	idlePxPerLimb := 0.02 * float64(uHeight)
+	idleCols := 8 // x4 = up -> down -> down -> up (both arms only)
 	if idleCols > maxCols {
 		maxCols = idleCols
 	}

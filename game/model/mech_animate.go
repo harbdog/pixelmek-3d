@@ -74,109 +74,83 @@ func NewMechAnimationSheetFromImage(srcImage *ebiten.Image) *MechSpriteAnimate {
 
 	mechSheet := ebiten.NewImage(maxCols*uSize, maxRows*uSize)
 
+	m := &MechSpriteAnimate{
+		sheet:        mechSheet,
+		maxCols:      maxCols,
+		maxRows:      maxRows,
+		numColsAtRow: [NUM_ANIMATIONS]int{1},
+	}
+
 	// first row shall be idle animation
 
 	// TODO: turn into a proper function to deal with each set of movements per frame
 
 	// first frame of idle animation is static image
 	row, col := int(ANIMATE_IDLE), 0
-	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(float64(col*uSize)+centerX, float64(row*uSize)+bottomY)
-	mechSheet.DrawImage(ll, op)
-	mechSheet.DrawImage(rl, op)
-	mechSheet.DrawImage(ct, op)
-	mechSheet.DrawImage(la, op)
-	mechSheet.DrawImage(ra, op)
+	offX, offY := float64(col*uSize)+centerX, float64(row*uSize)+bottomY
+	m.drawMechAnimFrame(offX, offY, ct, 0, la, 0, ra, 0, ll, 0, rl, 0)
 
 	// 2x arms up
 	col++
-	op = &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(float64(col*uSize)+centerX, float64(row*uSize)+bottomY)
-	mechSheet.DrawImage(ll, op)
-	mechSheet.DrawImage(rl, op)
-	mechSheet.DrawImage(ct, op)
-	op.GeoM.Translate(0, -idlePxPerLimb/2)
-	mechSheet.DrawImage(la, op)
-	mechSheet.DrawImage(ra, op)
+	offX = float64(col*uSize) + centerX
+	m.drawMechAnimFrame(offX, offY, ct, 0, la, -idlePxPerLimb/2, ra, -idlePxPerLimb/2, ll, 0, rl, 0)
 
 	col++
-	op = &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(float64(col*uSize)+centerX, float64(row*uSize)+bottomY)
-	mechSheet.DrawImage(ll, op)
-	mechSheet.DrawImage(rl, op)
-	mechSheet.DrawImage(ct, op)
-	op.GeoM.Translate(0, -idlePxPerLimb)
-	mechSheet.DrawImage(la, op)
-	mechSheet.DrawImage(ra, op)
+	offX = float64(col*uSize) + centerX
+	m.drawMechAnimFrame(offX, offY, ct, 0, la, -idlePxPerLimb, ra, -idlePxPerLimb, ll, 0, rl, 0)
 
 	// 4x arms down
 	col++
-	op = &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(float64(col*uSize)+centerX, float64(row*uSize)+bottomY)
-	mechSheet.DrawImage(ll, op)
-	mechSheet.DrawImage(rl, op)
-	mechSheet.DrawImage(ct, op)
-	op.GeoM.Translate(0, -idlePxPerLimb/2)
-	mechSheet.DrawImage(la, op)
-	mechSheet.DrawImage(ra, op)
+	offX = float64(col*uSize) + centerX
+	m.drawMechAnimFrame(offX, offY, ct, 0, la, -idlePxPerLimb/2, ra, -idlePxPerLimb/2, ll, 0, rl, 0)
 
 	col++
-	op = &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(float64(col*uSize)+centerX, float64(row*uSize)+bottomY)
-	mechSheet.DrawImage(ll, op)
-	mechSheet.DrawImage(rl, op)
-	mechSheet.DrawImage(ct, op)
-	op.GeoM.Translate(0, 0)
-	mechSheet.DrawImage(la, op)
-	mechSheet.DrawImage(ra, op)
+	offX = float64(col*uSize) + centerX
+	m.drawMechAnimFrame(offX, offY, ct, 0, la, 0, ra, 0, ll, 0, rl, 0)
 
-	// 2x ct down
+	// 2x ct down also
 	col++
-	op = &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(float64(col*uSize)+centerX, float64(row*uSize)+bottomY)
-	mechSheet.DrawImage(ll, op)
-	mechSheet.DrawImage(rl, op)
-	op.GeoM.Translate(0, idlePxPerLimb/2)
-	mechSheet.DrawImage(ct, op)
-	mechSheet.DrawImage(la, op)
-	mechSheet.DrawImage(ra, op)
+	offX = float64(col*uSize) + centerX
+	m.drawMechAnimFrame(offX, offY, ct, idlePxPerLimb/2, la, idlePxPerLimb/2, ra, idlePxPerLimb/2, ll, 0, rl, 0)
 
 	col++
-	op = &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(float64(col*uSize)+centerX, float64(row*uSize)+bottomY)
-	mechSheet.DrawImage(ll, op)
-	mechSheet.DrawImage(rl, op)
-	op.GeoM.Translate(0, idlePxPerLimb)
-	mechSheet.DrawImage(ct, op)
-	mechSheet.DrawImage(la, op)
-	mechSheet.DrawImage(ra, op)
+	offX = float64(col*uSize) + centerX
+	m.drawMechAnimFrame(offX, offY, ct, idlePxPerLimb, la, idlePxPerLimb, ra, idlePxPerLimb, ll, 0, rl, 0)
 
 	// arms and ct back up again
 	col++
-	op = &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(float64(col*uSize)+centerX, float64(row*uSize)+bottomY)
-	mechSheet.DrawImage(ll, op)
-	mechSheet.DrawImage(rl, op)
-	op.GeoM.Translate(0, idlePxPerLimb/2)
-	mechSheet.DrawImage(ct, op)
-	mechSheet.DrawImage(la, op)
-	mechSheet.DrawImage(ra, op)
+	offX = float64(col*uSize) + centerX
+	m.drawMechAnimFrame(offX, offY, ct, idlePxPerLimb/2, la, idlePxPerLimb/2, ra, idlePxPerLimb/2, ll, 0, rl, 0)
 
 	// TODO: second row shall be strut animation
 	if strutPxPerArm >= 0 && strutCols >= 0 {
 		// TODO
 	}
 
-	// TODO: second frame onward moves individual parts as needed
-	// for i := 0; i < maxCols; i++ {
-	// 	op.GeoM.Translate(float64(uSize), pxPerArm)
-	// 	mechSheet.DrawImage(static, op)
-	// }
+	return m
+}
 
-	return &MechSpriteAnimate{
-		sheet:        mechSheet,
-		maxCols:      maxCols,
-		maxRows:      maxRows,
-		numColsAtRow: [NUM_ANIMATIONS]int{1},
-	}
+func (m *MechSpriteAnimate) drawMechAnimFrame(offX, offY float64, ct *ebiten.Image, offCT float64, la *ebiten.Image, offLA float64, ra *ebiten.Image, offRA float64, ll *ebiten.Image, offLL float64, rl *ebiten.Image, offRL float64) {
+	offset := ebiten.GeoM{}
+	offset.Translate(offX, offY)
+
+	op_ct := &ebiten.DrawImageOptions{GeoM: offset}
+	op_ct.GeoM.Translate(0, offCT)
+	m.sheet.DrawImage(ct, op_ct)
+
+	op_la := &ebiten.DrawImageOptions{GeoM: offset}
+	op_la.GeoM.Translate(0, offLA)
+	m.sheet.DrawImage(la, op_la)
+
+	op_ra := &ebiten.DrawImageOptions{GeoM: offset}
+	op_ra.GeoM.Translate(0, offRA)
+	m.sheet.DrawImage(ra, op_ra)
+
+	op_ll := &ebiten.DrawImageOptions{GeoM: offset}
+	op_ll.GeoM.Translate(0, offLL)
+	m.sheet.DrawImage(ll, op_ll)
+
+	op_rl := &ebiten.DrawImageOptions{GeoM: offset}
+	op_rl.GeoM.Translate(0, offRL)
+	m.sheet.DrawImage(rl, op_rl)
 }

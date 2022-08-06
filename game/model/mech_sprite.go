@@ -12,12 +12,14 @@ import (
 
 type MechSprite struct {
 	*Sprite
-	static *ebiten.Image
-	ct     *ebiten.Image
-	la     *ebiten.Image
-	ra     *ebiten.Image
-	ll     *ebiten.Image
-	rl     *ebiten.Image
+	mechAnimate  *MechSpriteAnimate
+	animateIndex MechAnimationIndex
+	// static *ebiten.Image
+	// ct     *ebiten.Image
+	// la     *ebiten.Image
+	// ra     *ebiten.Image
+	// ll     *ebiten.Image
+	// rl     *ebiten.Image
 }
 
 type MechPart int
@@ -54,14 +56,14 @@ func NewMechSprite(
 	// all mech sprite sheets have 6 columns of images in the sheet:
 	// [full, torso, left arm, right arm, left leg, right leg]
 	mechAnimate := NewMechAnimationSheetFromImage(img)
-
-	//p := NewSpriteFromSheet(x, y, 1.0, mechSheet, color.RGBA{}, numCols, numRows, 0, raycaster.AnchorBottom, collisionRadius)
-	//p := NewSprite(x, y, 1.0, mechAnimate.sheet, color.RGBA{}, raycaster.AnchorBottom, collisionRadius)
-	p := NewAnimatedSprite(x, y, 0.75, 5, mechAnimate.sheet, color.RGBA{}, mechAnimate.maxCols, mechAnimate.maxRows, raycaster.AnchorBottom, collisionRadius)
-
-	// TODO: use function to split out the parts without using NewSpriteFromSheet, since NewMechAnimationSheetFromImage will replace the need
+	p := NewAnimatedSprite(
+		x, y, 0.75, 0, mechAnimate.sheet, color.RGBA{},
+		mechAnimate.maxCols, mechAnimate.maxRows, raycaster.AnchorBottom, collisionRadius,
+	)
 	s := &MechSprite{
-		Sprite: p,
+		Sprite:       p,
+		mechAnimate:  mechAnimate,
+		animateIndex: ANIMATE_STATIC,
 	}
 
 	return s
@@ -77,4 +79,56 @@ func NewMechSpriteFromMech(x, y float64, origMech *MechSprite) *MechSprite {
 	s.Position = &geom.Vector2{X: x, Y: y}
 
 	return s
+}
+
+func (s *MechSprite) SetMechAnimation(animateIndex MechAnimationIndex) {
+	s.animateIndex = animateIndex
+	s.ResetAnimation()
+}
+
+func (s *MechSprite) ResetAnimation() {
+	s.animCounter = 0
+	s.loopCounter = 0
+
+	switch {
+	case s.animateIndex <= ANIMATE_STATIC:
+		s.texNum = 0
+	case s.animateIndex > ANIMATE_STATIC:
+		animRow := int(s.animateIndex)
+		s.texNum = animRow * s.mechAnimate.maxCols
+	}
+}
+
+func (s *MechSprite) Update(camPos *geom.Vector2) {
+	if s.AnimationRate <= 0 {
+		return
+	}
+	if s.animateIndex <= ANIMATE_STATIC {
+		s.texNum = 0
+		return
+	}
+	if s.animCounter >= s.AnimationRate {
+		animRow := int(s.animateIndex)
+
+		minTexNum := animRow * s.mechAnimate.maxCols
+		maxTexNum := minTexNum + s.mechAnimate.numColsAtRow[animRow] - 1
+
+		s.animCounter = 0
+
+		if s.animReversed {
+			s.texNum -= 1
+			if s.texNum > maxTexNum || s.texNum < minTexNum {
+				s.texNum = maxTexNum
+				s.loopCounter++
+			}
+		} else {
+			s.texNum += 1
+			if s.texNum > maxTexNum || s.texNum < minTexNum {
+				s.texNum = minTexNum
+				s.loopCounter++
+			}
+		}
+	} else {
+		s.animCounter++
+	}
 }

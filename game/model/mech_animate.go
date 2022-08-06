@@ -9,8 +9,9 @@ import (
 type MechAnimationIndex int
 
 const (
-	ANIMATE_IDLE  MechAnimationIndex = 0
-	ANIMATE_STRUT MechAnimationIndex = 1
+	ANIMATE_STATIC MechAnimationIndex = -1
+	ANIMATE_IDLE   MechAnimationIndex = 0
+	ANIMATE_STRUT  MechAnimationIndex = 1
 	// TODO: ANIMATE_SHUTDOWN, ANIMATE_JUMP?
 	NUM_ANIMATIONS MechAnimationIndex = 2
 )
@@ -55,19 +56,20 @@ func NewMechAnimationSheetFromImage(srcImage *ebiten.Image) *MechSpriteAnimate {
 	}
 
 	// calculate number of animations (rows) and frames for each animation (cols)
+	numColsAtRow := [NUM_ANIMATIONS]int{}
 
-	// idle animation: only arms and torso limbs move, for now just going with 4% pixel movement for both
+	// idle animation: only arms and torso move, for now going with 4% pixel movement for both
 	idlePxPerLimb := 0.02 * float64(uHeight)
-	idleCols := 8 // 4x2 = up -> down -> down -> up (both arms only)
-	if idleCols > maxCols {
-		maxCols = idleCols
+	numColsAtRow[ANIMATE_IDLE] = 8 // 4x2 = up -> down -> down -> up (both arms only)
+	if numColsAtRow[ANIMATE_IDLE] > maxCols {
+		maxCols = numColsAtRow[ANIMATE_IDLE]
 	}
 
-	// strut animation: for now just going with 2% for arms, 6% pixel movement for legs
+	// strut animation: for now going with 2% for arms, 6% pixel movement for legs
 	strutPxPerArm, strutPxPerLeg := 0.02*float64(uHeight), 0.06*float64(uHeight)
-	strutCols := 16 // 4x4 = up -> down -> down -> up (starting with left arm, reverse right arm)
-	if strutCols > maxCols {
-		maxCols = strutCols
+	numColsAtRow[ANIMATE_STRUT] = 16 // 4x4 = up -> down -> down -> up (starting with left arm, reverse right arm)
+	if numColsAtRow[ANIMATE_STRUT] > maxCols {
+		maxCols = numColsAtRow[ANIMATE_STRUT]
 	}
 
 	mechSheet := ebiten.NewImage(maxCols*uSize, maxRows*uSize)
@@ -76,7 +78,7 @@ func NewMechAnimationSheetFromImage(srcImage *ebiten.Image) *MechSpriteAnimate {
 		sheet:        mechSheet,
 		maxCols:      maxCols,
 		maxRows:      maxRows,
-		numColsAtRow: [NUM_ANIMATIONS]int{1},
+		numColsAtRow: numColsAtRow,
 	}
 
 	// draw idle animation

@@ -185,13 +185,34 @@ func (g *Game) loadSprites() {
 	mechImg := getSpriteFromFile("mechs/timberwolf.png")
 	mechTemplate := model.NewMechSprite(0, 0, mechImg, 0.01)
 
-	// testing a couple of them
-	mech := model.NewMechSpriteFromMech(15, 18, mechTemplate)
-	g.sprites.addMechSprite(mech)
+	// testing a few  of them
+	mech0 := model.NewMechSpriteFromMech(13, 15, mechTemplate)
+	mech0.SetMechAnimation(model.ANIMATE_STATIC)
+	g.sprites.addMechSprite(mech0)
 
-	mech2 := model.NewMechSpriteFromMech(17, 18, mechTemplate)
-	if mech2.NumAnimationFrames() > 1 {
-		mech2.SetAnimationFrame(mech2.NumAnimationFrames() / 2)
-	}
+	mech1 := model.NewMechSpriteFromMech(15, 15, mechTemplate)
+	mech1.SetMechAnimation(model.ANIMATE_STRUT)
+	mech1.AnimationRate = 5
+	g.sprites.addMechSprite(mech1)
+
+	mech2 := model.NewMechSpriteFromMech(17, 15, mechTemplate)
+	mech2.SetMechAnimation(model.ANIMATE_IDLE)
+	mech2.AnimationRate = 7
 	g.sprites.addMechSprite(mech2)
+
+	// testing lots of them
+	// for i := 1.5; i <= 19.5; i++ {
+	// 	for j := 20.0; j < 24; j++ {
+	// 		mech := model.NewMechSpriteFromMech(i, j, mechTemplate)
+	// 		g.sprites.addMechSprite(mech)
+
+	// 		if int(i)%2 == 0 {
+	// 			mech.SetAnimationReversed(true)
+	// 		}
+
+	// 		if mech.NumAnimationFrames() > 1 {
+	// 			mech.SetAnimationFrame(int(i) % mech.NumAnimationFrames())
+	// 		}
+	// 	}
+	// }
 }

@@ -51,13 +51,13 @@ const (
 // }
 
 func NewMechSprite(
-	x, y float64, img *ebiten.Image, collisionRadius float64,
+	x, y, scale float64, img *ebiten.Image, collisionRadius float64,
 ) *MechSprite {
 	// all mech sprite sheets have 6 columns of images in the sheet:
 	// [full, torso, left arm, right arm, left leg, right leg]
 	mechAnimate := NewMechAnimationSheetFromImage(img)
 	p := NewAnimatedSprite(
-		x, y, 0.75, 0, mechAnimate.sheet, color.RGBA{},
+		x, y, scale, 0, mechAnimate.sheet, color.RGBA{},
 		mechAnimate.maxCols, mechAnimate.maxRows, raycaster.AnchorBottom, collisionRadius,
 	)
 	s := &MechSprite{

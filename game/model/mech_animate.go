@@ -21,6 +21,11 @@ type MechSpriteAnimate struct {
 	numColsAtRow     [NUM_ANIMATIONS]int
 }
 
+type mechAnimatePart struct {
+	image   *ebiten.Image
+	travelY float64
+}
+
 // NewMechAnimationSheetFromImage creates a new image sheet with generated image frames for mech sprite animation
 func NewMechAnimationSheetFromImage(srcImage *ebiten.Image) *MechSpriteAnimate {
 	// all mech sprite sheets have 6 columns of images in the sheet:
@@ -35,18 +40,18 @@ func NewMechAnimationSheetFromImage(srcImage *ebiten.Image) *MechSpriteAnimate {
 	}
 
 	// determine offsets for center/bottom within each frame
-	centerX, bottomY := float64(uSize/2-uWidth/2), float64(uSize-uHeight)
+	centerX, bottomY := float64(uSize)/2-float64(uWidth)/2, float64(uSize-uHeight)
 
 	// maxCols will be determined later based on how many frames needed by any single animation row
 	maxRows, maxCols := int(NUM_ANIMATIONS), 1
 
 	// separate out each limb part from source image
-	srcParts := make([]*ebiten.Image, int(NUM_PARTS))
+	srcParts := make([]*mechAnimatePart, int(NUM_PARTS))
 	for c := 0; c < int(NUM_PARTS); c++ {
 		x, y := c*uWidth, 0
 		cellRect := image.Rect(x, y, x+uWidth-1, y+uHeight-1)
 		cellImg := srcImage.SubImage(cellRect).(*ebiten.Image)
-		srcParts[c] = cellImg
+		srcParts[c] = &mechAnimatePart{image: cellImg, travelY: 0}
 	}
 
 	// static := srcParts[PART_STATIC]
@@ -83,44 +88,33 @@ func NewMechAnimationSheetFromImage(srcImage *ebiten.Image) *MechSpriteAnimate {
 
 	// first row shall be idle animation
 
-	// TODO: turn into a proper function to deal with each set of movements per frame
-
 	// first frame of idle animation is static image
 	row, col := int(ANIMATE_IDLE), 0
-	offX, offY := float64(col*uSize)+centerX, float64(row*uSize)+bottomY
-	m.drawMechAnimFrame(offX, offY, ct, 0, la, 0, ra, 0, ll, 0, rl, 0)
+	//m.drawMechAnimFrame(offX, offY, ct.image, 0, la.image, 0, ra.image, 0, ll.image, 0, rl.image, 0)
+	m.drawMechAnimationParts(row, col, 1, uSize, centerX, bottomY, ct, 0, la, 0, ra, 0, ll, 0, rl, 0)
+	col++
 
 	// 2x arms up
-	col++
-	offX = float64(col*uSize) + centerX
-	m.drawMechAnimFrame(offX, offY, ct, 0, la, -idlePxPerLimb/2, ra, -idlePxPerLimb/2, ll, 0, rl, 0)
+	//m.drawMechAnimFrame(offX, offY, ct, 0, la, -idlePxPerLimb/2, ra, -idlePxPerLimb/2, ll, 0, rl, 0)
+	//m.drawMechAnimFrame(offX, offY, ct, 0, la, -idlePxPerLimb, ra, -idlePxPerLimb, ll, 0, rl, 0)
+	m.drawMechAnimationParts(row, col, 2, uSize, centerX, bottomY, ct, 0, la, -idlePxPerLimb, ra, -idlePxPerLimb, ll, 0, rl, 0)
+	col += 2
 
-	col++
-	offX = float64(col*uSize) + centerX
-	m.drawMechAnimFrame(offX, offY, ct, 0, la, -idlePxPerLimb, ra, -idlePxPerLimb, ll, 0, rl, 0)
+	// 2x arms down
+	//m.drawMechAnimFrame(offX, offY, ct, 0, la, -idlePxPerLimb/2, ra, -idlePxPerLimb/2, ll, 0, rl, 0)
+	//m.drawMechAnimFrame(offX, offY, ct, 0, la, 0, ra, 0, ll, 0, rl, 0)
+	m.drawMechAnimationParts(row, col, 2, uSize, centerX, bottomY, ct, 0, la, idlePxPerLimb, ra, idlePxPerLimb, ll, 0, rl, 0)
+	col += 2
 
-	// 4x arms down
-	col++
-	offX = float64(col*uSize) + centerX
-	m.drawMechAnimFrame(offX, offY, ct, 0, la, -idlePxPerLimb/2, ra, -idlePxPerLimb/2, ll, 0, rl, 0)
+	// 2x arms down + 2x ct down
+	//m.drawMechAnimFrame(offX, offY, ct.image, idlePxPerLimb/2, la.image, idlePxPerLimb/2, ra.image, idlePxPerLimb/2, ll.image, 0, rl.image, 0)
+	//m.drawMechAnimFrame(offX, offY, ct.image, idlePxPerLimb, la.image, idlePxPerLimb, ra.image, idlePxPerLimb, ll.image, 0, rl.image, 0)
+	m.drawMechAnimationParts(row, col, 2, uSize, centerX, bottomY, ct, idlePxPerLimb, la, idlePxPerLimb, ra, idlePxPerLimb, ll, 0, rl, 0)
+	col += 2
 
-	col++
-	offX = float64(col*uSize) + centerX
-	m.drawMechAnimFrame(offX, offY, ct, 0, la, 0, ra, 0, ll, 0, rl, 0)
-
-	// 2x ct down also
-	col++
-	offX = float64(col*uSize) + centerX
-	m.drawMechAnimFrame(offX, offY, ct, idlePxPerLimb/2, la, idlePxPerLimb/2, ra, idlePxPerLimb/2, ll, 0, rl, 0)
-
-	col++
-	offX = float64(col*uSize) + centerX
-	m.drawMechAnimFrame(offX, offY, ct, idlePxPerLimb, la, idlePxPerLimb, ra, idlePxPerLimb, ll, 0, rl, 0)
-
-	// arms and ct back up again
-	col++
-	offX = float64(col*uSize) + centerX
-	m.drawMechAnimFrame(offX, offY, ct, idlePxPerLimb/2, la, idlePxPerLimb/2, ra, idlePxPerLimb/2, ll, 0, rl, 0)
+	// 1x arms and ct back up again
+	//m.drawMechAnimFrame(offX, offY, ct.image, idlePxPerLimb/2, la.image, idlePxPerLimb/2, ra.image, idlePxPerLimb/2, ll.image, 0, rl.image, 0)
+	m.drawMechAnimationParts(row, col, 1, uSize, centerX, bottomY, ct, -idlePxPerLimb/2, la, -idlePxPerLimb/2, ra, -idlePxPerLimb/2, ll, 0, rl, 0)
 
 	// TODO: second row shall be strut animation
 	if strutPxPerArm >= 0 && strutCols >= 0 {
@@ -130,21 +124,53 @@ func NewMechAnimationSheetFromImage(srcImage *ebiten.Image) *MechSpriteAnimate {
 	return m
 }
 
-func (m *MechSpriteAnimate) drawMechAnimFrame(offX, offY float64, ct *ebiten.Image, offCT float64, la *ebiten.Image, offLA float64, ra *ebiten.Image, offRA float64, ll *ebiten.Image, offLL float64, rl *ebiten.Image, offRL float64) {
+// drawMechAnimationParts draws onto the sheet each mech part with total pixel travel over a number of given frames
+// starting at the given column within the given row in the sheet of frames
+func (m *MechSpriteAnimate) drawMechAnimationParts(
+	row, col, frames, uSize int, adjustX, adjustY float64, ct *mechAnimatePart, pxCT float64,
+	la *mechAnimatePart, pxLA float64, ra *mechAnimatePart, pxRA float64,
+	ll *mechAnimatePart, pxLL float64, rl *mechAnimatePart, pxRL float64,
+) {
+	offsetY := float64(row*uSize) + adjustY
+
+	// use previously tracked offsets in parts as starting point
+	pxPerCT := ct.travelY
+	pxPerLA := la.travelY
+	pxPerRA := ra.travelY
+	pxPerLL := ll.travelY
+	pxPerRL := rl.travelY
+
+	for c := col; c < col+frames; c++ {
+		offsetX := float64(c*uSize) + adjustX
+		pxPerCT += pxCT / float64(frames)
+		pxPerLA += pxLA / float64(frames)
+		pxPerRA += pxRA / float64(frames)
+		pxPerLL += pxLL / float64(frames)
+		pxPerRL += pxRL / float64(frames)
+
+		m.drawMechAnimFrame(offsetX, offsetY, ct.image, pxPerCT, la.image, pxPerLA, ra.image, pxPerRA, ll.image, pxPerLL, rl.image, pxPerRL)
+	}
+
+	// keep track of offsets in parts for next animation
+	ct.travelY += pxCT
+	la.travelY += pxLA
+	ra.travelY += pxRA
+	ll.travelY += pxLL
+	rl.travelY += pxRL
+}
+
+// drawMechAnimFrame draws onto the sheet each mech part each with given offet for the frame (offX, offY),
+// and individual offsets specific for each part
+func (m *MechSpriteAnimate) drawMechAnimFrame(
+	offX, offY float64, ct *ebiten.Image, offCT float64, la *ebiten.Image, offLA float64,
+	ra *ebiten.Image, offRA float64, ll *ebiten.Image, offLL float64, rl *ebiten.Image, offRL float64,
+) {
 	offset := ebiten.GeoM{}
 	offset.Translate(offX, offY)
 
 	op_ct := &ebiten.DrawImageOptions{GeoM: offset}
 	op_ct.GeoM.Translate(0, offCT)
 	m.sheet.DrawImage(ct, op_ct)
-
-	op_la := &ebiten.DrawImageOptions{GeoM: offset}
-	op_la.GeoM.Translate(0, offLA)
-	m.sheet.DrawImage(la, op_la)
-
-	op_ra := &ebiten.DrawImageOptions{GeoM: offset}
-	op_ra.GeoM.Translate(0, offRA)
-	m.sheet.DrawImage(ra, op_ra)
 
 	op_ll := &ebiten.DrawImageOptions{GeoM: offset}
 	op_ll.GeoM.Translate(0, offLL)
@@ -153,4 +179,12 @@ func (m *MechSpriteAnimate) drawMechAnimFrame(offX, offY float64, ct *ebiten.Ima
 	op_rl := &ebiten.DrawImageOptions{GeoM: offset}
 	op_rl.GeoM.Translate(0, offRL)
 	m.sheet.DrawImage(rl, op_rl)
+
+	op_la := &ebiten.DrawImageOptions{GeoM: offset}
+	op_la.GeoM.Translate(0, offLA)
+	m.sheet.DrawImage(la, op_la)
+
+	op_ra := &ebiten.DrawImageOptions{GeoM: offset}
+	op_ra.GeoM.Translate(0, offRA)
+	m.sheet.DrawImage(ra, op_ra)
 }

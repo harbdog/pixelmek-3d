@@ -12,7 +12,7 @@ const (
 	ANIMATE_IDLE  MechAnimationIndex = 0
 	ANIMATE_STRUT MechAnimationIndex = 1
 	// TODO: ANIMATE_SHUTDOWN, ANIMATE_JUMP?
-	NUM_ANIMATIONS MechAnimationIndex = 1
+	NUM_ANIMATIONS MechAnimationIndex = 2
 )
 
 type MechSpriteAnimate struct {
@@ -40,7 +40,7 @@ func NewMechAnimationSheetFromImage(srcImage *ebiten.Image) *MechSpriteAnimate {
 	}
 
 	// determine offsets for center/bottom within each frame
-	centerX, bottomY := float64(uSize)/2-float64(uWidth)/2, float64(uSize-uHeight)
+	centerX, bottomY := float64(uSize)/2-float64(uWidth)/2, float64(uSize-uHeight-1)
 
 	// maxCols will be determined later based on how many frames needed by any single animation row
 	maxRows, maxCols := int(NUM_ANIMATIONS), 1
@@ -54,28 +54,21 @@ func NewMechAnimationSheetFromImage(srcImage *ebiten.Image) *MechSpriteAnimate {
 		srcParts[c] = &mechAnimatePart{image: cellImg, travelY: 0}
 	}
 
-	// static := srcParts[PART_STATIC]
-	ct := srcParts[PART_CT]
-	la := srcParts[PART_LA]
-	ra := srcParts[PART_RA]
-	ll := srcParts[PART_LL]
-	rl := srcParts[PART_RL]
-
 	// calculate number of animations (rows) and frames for each animation (cols)
 
 	// idle animation: only arms and torso limbs move, for now just going with 4% pixel movement for both
 	idlePxPerLimb := 0.02 * float64(uHeight)
-	idleCols := 8 // x4 = up -> down -> down -> up (both arms only)
+	idleCols := 8 // 4x2 = up -> down -> down -> up (both arms only)
 	if idleCols > maxCols {
 		maxCols = idleCols
 	}
 
-	// strut animation: for now just going with 7% pixel movement for legs, 5% for arms
-	strutPxPerLeg, strutPxPerArm := 0.07*float64(uHeight), 0.05*float64(uHeight)
-	strutCols := int(strutPxPerLeg) * 4 // x4 = up -> down -> down -> up (starting with left arm, reverse right arm)
-	// if strutCols > maxCols {
-	// 	maxCols = strutCols
-	// }
+	// strut animation: for now just going with 2% for arms, 6% pixel movement for legs
+	strutPxPerArm, strutPxPerLeg := 0.02*float64(uHeight), 0.06*float64(uHeight)
+	strutCols := 16 // 4x4 = up -> down -> down -> up (starting with left arm, reverse right arm)
+	if strutCols > maxCols {
+		maxCols = strutCols
+	}
 
 	mechSheet := ebiten.NewImage(maxCols*uSize, maxRows*uSize)
 
@@ -86,42 +79,92 @@ func NewMechAnimationSheetFromImage(srcImage *ebiten.Image) *MechSpriteAnimate {
 		numColsAtRow: [NUM_ANIMATIONS]int{1},
 	}
 
-	// first row shall be idle animation
+	// draw idle animation
+	m.drawMechIdle(uSize, centerX, bottomY, idlePxPerLimb, srcParts)
+
+	// draw strut animation
+	m.drawMechStrut(uSize, centerX, bottomY, strutPxPerArm, strutPxPerLeg, srcParts)
+
+	return m
+}
+
+// drawMechIdle draws onto the sheet the idle animation in its assigned row in the sheet
+func (m *MechSpriteAnimate) drawMechIdle(uSize int, adjustX, adjustY, pxPerLimb float64, parts []*mechAnimatePart) {
+	row, col := int(ANIMATE_IDLE), 0
+
+	resetMechAnimationParts(parts)
+	ct := parts[PART_CT]
+	la := parts[PART_LA]
+	ra := parts[PART_RA]
+	ll := parts[PART_LL]
+	rl := parts[PART_RL]
 
 	// first frame of idle animation is static image
-	row, col := int(ANIMATE_IDLE), 0
-	//m.drawMechAnimFrame(offX, offY, ct.image, 0, la.image, 0, ra.image, 0, ll.image, 0, rl.image, 0)
-	m.drawMechAnimationParts(row, col, 1, uSize, centerX, bottomY, ct, 0, la, 0, ra, 0, ll, 0, rl, 0)
+	m.drawMechAnimationParts(row, col, 1, uSize, adjustX, adjustY, ct, 0, la, 0, ra, 0, ll, 0, rl, 0)
 	col++
 
 	// 2x arms up
-	//m.drawMechAnimFrame(offX, offY, ct, 0, la, -idlePxPerLimb/2, ra, -idlePxPerLimb/2, ll, 0, rl, 0)
-	//m.drawMechAnimFrame(offX, offY, ct, 0, la, -idlePxPerLimb, ra, -idlePxPerLimb, ll, 0, rl, 0)
-	m.drawMechAnimationParts(row, col, 2, uSize, centerX, bottomY, ct, 0, la, -idlePxPerLimb, ra, -idlePxPerLimb, ll, 0, rl, 0)
+	m.drawMechAnimationParts(row, col, 2, uSize, adjustX, adjustY, ct, 0, la, -pxPerLimb, ra, -pxPerLimb, ll, 0, rl, 0)
 	col += 2
 
 	// 2x arms down
-	//m.drawMechAnimFrame(offX, offY, ct, 0, la, -idlePxPerLimb/2, ra, -idlePxPerLimb/2, ll, 0, rl, 0)
-	//m.drawMechAnimFrame(offX, offY, ct, 0, la, 0, ra, 0, ll, 0, rl, 0)
-	m.drawMechAnimationParts(row, col, 2, uSize, centerX, bottomY, ct, 0, la, idlePxPerLimb, ra, idlePxPerLimb, ll, 0, rl, 0)
+	m.drawMechAnimationParts(row, col, 2, uSize, adjustX, adjustY, ct, 0, la, pxPerLimb, ra, pxPerLimb, ll, 0, rl, 0)
 	col += 2
 
 	// 2x arms down + 2x ct down
-	//m.drawMechAnimFrame(offX, offY, ct.image, idlePxPerLimb/2, la.image, idlePxPerLimb/2, ra.image, idlePxPerLimb/2, ll.image, 0, rl.image, 0)
-	//m.drawMechAnimFrame(offX, offY, ct.image, idlePxPerLimb, la.image, idlePxPerLimb, ra.image, idlePxPerLimb, ll.image, 0, rl.image, 0)
-	m.drawMechAnimationParts(row, col, 2, uSize, centerX, bottomY, ct, idlePxPerLimb, la, idlePxPerLimb, ra, idlePxPerLimb, ll, 0, rl, 0)
+	m.drawMechAnimationParts(
+		row, col, 2, uSize, adjustX, adjustY, ct, pxPerLimb, la, pxPerLimb, ra, pxPerLimb, ll, 0, rl, 0,
+	)
 	col += 2
 
 	// 1x arms and ct back up again
-	//m.drawMechAnimFrame(offX, offY, ct.image, idlePxPerLimb/2, la.image, idlePxPerLimb/2, ra.image, idlePxPerLimb/2, ll.image, 0, rl.image, 0)
-	m.drawMechAnimationParts(row, col, 1, uSize, centerX, bottomY, ct, -idlePxPerLimb/2, la, -idlePxPerLimb/2, ra, -idlePxPerLimb/2, ll, 0, rl, 0)
+	m.drawMechAnimationParts(
+		row, col, 1, uSize, adjustX, adjustY, ct, -pxPerLimb/2, la, -pxPerLimb/2, ra, -pxPerLimb/2, ll, 0, rl, 0,
+	)
+}
 
-	// TODO: second row shall be strut animation
-	if strutPxPerArm >= 0 && strutCols >= 0 {
-		// TODO
+// drawMechStrut draws onto the sheet the strut animation in its assigned row in the sheet
+func (m *MechSpriteAnimate) drawMechStrut(uSize int, adjustX, adjustY, pxPerArm, pxPerLeg float64, parts []*mechAnimatePart) {
+	row, col := int(ANIMATE_STRUT), 0
+
+	resetMechAnimationParts(parts)
+	ct := parts[PART_CT]
+	la := parts[PART_LA]
+	ra := parts[PART_RA]
+	ll := parts[PART_LL]
+	rl := parts[PART_RL]
+
+	// ct needs to also move up as a leg moves up, half as much
+	pxPerTorso := pxPerLeg / 2
+
+	// 4x rl/la up + ra down
+	m.drawMechAnimationParts(
+		row, col, 4, uSize, adjustX, adjustY, ct, -pxPerTorso, la, -pxPerArm, ra, pxPerArm, ll, 0, rl, -pxPerLeg,
+	)
+	col += 4
+
+	// 4x rl/la down + ra up
+	m.drawMechAnimationParts(
+		row, col, 4, uSize, adjustX, adjustY, ct, pxPerTorso, la, pxPerArm, ra, -pxPerArm, ll, 0, rl, pxPerLeg,
+	)
+	col += 4
+
+	// 4x ll/ra up + la down
+	m.drawMechAnimationParts(
+		row, col, 4, uSize, adjustX, adjustY, ct, -pxPerTorso, la, pxPerArm, ra, -pxPerArm, ll, -pxPerLeg, rl, 0,
+	)
+	col += 4
+
+	// 4x ll/ra down + la up
+	m.drawMechAnimationParts(
+		row, col, 4, uSize, adjustX, adjustY, ct, pxPerTorso, la, -pxPerArm, ra, pxPerArm, ll, pxPerLeg, rl, 0,
+	)
+}
+
+func resetMechAnimationParts(parts []*mechAnimatePart) {
+	for _, part := range parts {
+		part.travelY = 0
 	}
-
-	return m
 }
 
 // drawMechAnimationParts draws onto the sheet each mech part with total pixel travel over a number of given frames
@@ -148,7 +191,10 @@ func (m *MechSpriteAnimate) drawMechAnimationParts(
 		pxPerLL += pxLL / float64(frames)
 		pxPerRL += pxRL / float64(frames)
 
-		m.drawMechAnimFrame(offsetX, offsetY, ct.image, pxPerCT, la.image, pxPerLA, ra.image, pxPerRA, ll.image, pxPerLL, rl.image, pxPerRL)
+		m.drawMechAnimFrame(
+			offsetX, offsetY, ct.image, pxPerCT, la.image, pxPerLA,
+			ra.image, pxPerRA, ll.image, pxPerLL, rl.image, pxPerRL,
+		)
 	}
 
 	// keep track of offsets in parts for next animation

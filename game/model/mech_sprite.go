@@ -57,7 +57,7 @@ func NewMechSprite(
 
 	//p := NewSpriteFromSheet(x, y, 1.0, mechSheet, color.RGBA{}, numCols, numRows, 0, raycaster.AnchorBottom, collisionRadius)
 	//p := NewSprite(x, y, 1.0, mechAnimate.sheet, color.RGBA{}, raycaster.AnchorBottom, collisionRadius)
-	p := NewAnimatedSprite(x, y, 0.75, 7, mechAnimate.sheet, color.RGBA{}, mechAnimate.maxCols, mechAnimate.maxRows, raycaster.AnchorBottom, collisionRadius)
+	p := NewAnimatedSprite(x, y, 0.75, 5, mechAnimate.sheet, color.RGBA{}, mechAnimate.maxCols, mechAnimate.maxRows, raycaster.AnchorBottom, collisionRadius)
 
 	// TODO: use function to split out the parts without using NewSpriteFromSheet, since NewMechAnimationSheetFromImage will replace the need
 	s := &MechSprite{

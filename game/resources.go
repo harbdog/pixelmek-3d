@@ -190,6 +190,8 @@ func (g *Game) loadSprites() {
 	g.sprites.addMechSprite(mech)
 
 	mech2 := model.NewMechSpriteFromMech(17, 18, mechTemplate)
-	mech2.SetAnimationFrame(3)
+	if mech2.NumAnimationFrames() > 1 {
+		mech2.SetAnimationFrame(mech2.NumAnimationFrames() / 2)
+	}
 	g.sprites.addMechSprite(mech2)
 }

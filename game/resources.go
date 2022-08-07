@@ -196,6 +196,7 @@ func (g *Game) loadSprites() {
 	mech1 := model.NewMechSpriteFromMech(15, 15, whkTemplate)
 	mech1.SetMechAnimation(model.ANIMATE_STRUT)
 	mech1.AnimationRate = 5
+	mech1.Velocity = 0.0025
 	g.sprites.addMechSprite(mech1)
 
 	mech2 := model.NewMechSpriteFromMech(17, 15, whkTemplate)
@@ -205,16 +206,20 @@ func (g *Game) loadSprites() {
 
 	// testing lots of them
 	for i := 1.5; i <= 19.5; i++ {
-		for j := 20.0; j < 24; j++ {
+		for j := 22.0; j < 24; j++ {
 			mech := model.NewMechSpriteFromMech(i, j, tbrTemplate)
-			g.sprites.addMechSprite(mech)
 
-			if int(j)%2 == 0 {
+			mech.Velocity = 0.01
+
+			if false && int(j)%2 == 0 {
 				mech.SetMechAnimation(model.ANIMATE_IDLE)
 				mech.AnimationRate = 7
 			} else {
 				mech.SetMechAnimation(model.ANIMATE_STRUT)
-				mech.AnimationRate = 5
+				// TODO: set AnimationRate based on mech velocity (1 is fastest for running light mechs)
+				//       2 could be for medium mech at run speed, 3 for heavy, 4 for assault,
+				//       higher values if mech is moving but not at run speed.
+				mech.AnimationRate = 2
 			}
 
 			if int(i)%2 == 0 {
@@ -224,6 +229,8 @@ func (g *Game) loadSprites() {
 			if mech.NumAnimationFrames() > 1 {
 				mech.SetAnimationFrame(int(i) % mech.NumAnimationFrames())
 			}
+
+			g.sprites.addMechSprite(mech)
 		}
 	}
 }

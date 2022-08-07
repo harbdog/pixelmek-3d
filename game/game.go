@@ -530,27 +530,32 @@ func (g *Game) AllEntities() map[*model.Entity]struct{} {
 func (g *Game) updateSprites() {
 	// Testing animated sprite movement
 	for s := range g.sprites.mapSprites {
-		if s.Velocity != 0 {
-			vLine := geom.LineFromAngle(s.Position.X, s.Position.Y, s.Angle, s.Velocity)
-
-			xCheck := vLine.X2
-			yCheck := vLine.Y2
-
-			newPos, isCollision, _ := g.getValidMove(s.Entity, xCheck, yCheck, false)
-			if isCollision {
-				// for testing purposes, letting the sample sprite ping pong off walls in somewhat random direction
-				s.Angle = randFloat(-math.Pi, math.Pi)
-				s.Velocity = randFloat(0.01, 0.03)
-			} else {
-				s.Position = newPos
-			}
-		}
+		g.updateSpritePosition(s)
 		s.Update(g.player.Position)
 	}
 
 	// Testing animated mech sprite movement
-	for m := range g.sprites.mechSprites {
-		m.Update(g.player.Position)
+	for s := range g.sprites.mechSprites {
+		g.updateSpritePosition(s.Sprite)
+		s.Update(g.player.Position)
+	}
+}
+
+func (g *Game) updateSpritePosition(s *model.Sprite) {
+	if s.Velocity != 0 {
+		vLine := geom.LineFromAngle(s.Position.X, s.Position.Y, s.Angle, s.Velocity)
+
+		xCheck := vLine.X2
+		yCheck := vLine.Y2
+
+		newPos, isCollision, _ := g.getValidMove(s.Entity, xCheck, yCheck, false)
+		if isCollision {
+			// for testing purposes, letting the sample sprite ping pong off walls in somewhat random direction
+			s.Angle = randFloat(-math.Pi, math.Pi)
+			s.Velocity = randFloat(0.005, 0.009)
+		} else {
+			s.Position = newPos
+		}
 	}
 }
 

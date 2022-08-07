@@ -50,7 +50,7 @@ func NewMechAnimationSheetFromImage(srcImage *ebiten.Image) *MechSpriteAnimate {
 	srcParts := make([]*mechAnimatePart, int(NUM_PARTS))
 	for c := 0; c < int(NUM_PARTS); c++ {
 		x, y := c*uWidth, 0
-		cellRect := image.Rect(x, y, x+uWidth-1, y+uHeight-1)
+		cellRect := image.Rect(x, y, x+uWidth, y+uHeight)
 		cellImg := srcImage.SubImage(cellRect).(*ebiten.Image)
 		srcParts[c] = &mechAnimatePart{image: cellImg, travelY: 0}
 	}

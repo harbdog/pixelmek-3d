@@ -435,12 +435,12 @@ func (g *Game) fireWeapon() {
 	}
 
 	// spawning projectile at offsets from player's center point of view
-	// TODO: pitch angle should be based on raycasted angle toward crosshairs, for now just simplified as player pitch angle
 	pAngle, pPitch := g.player.Angle, g.player.Pitch
 
 	// firing test projectiles
 	pVelocity := 16.0
 
+	// FIXME: address issue with chopper sprite collision box being offset below it
 	pX, pY, pZ := g.weaponPosition3D(0, 0)
 	projectile := p.SpawnProjectile(pX, pY, pZ, pAngle, pPitch, pVelocity, g.player.Entity)
 	if projectile != nil {

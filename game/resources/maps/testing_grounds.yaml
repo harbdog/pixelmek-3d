@@ -175,7 +175,7 @@ sprites:
   collisionRadius: 12
   collisionHeight: 26
   hitPoints: 25
-  zPosition: 2.0
+  zPosition: 3.0
   positions:
   - [13, 15]
   - [17, 15]

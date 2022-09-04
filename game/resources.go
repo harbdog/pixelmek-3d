@@ -240,11 +240,18 @@ func (g *Game) loadGameSprites() {
 
 	// TODO: move these to predefined projectile sprites from their own data source files
 	redLaserImg := getSpriteFromFile("projectiles/beams_red.png")
+	redLaserWidth, _ := redLaserImg.Size()
+	redLaserCols, redLaserRows := 1, 3
+	redLaserScale := 0.2
+	// in pixels, radius to use for collision testing
+	redLaserPxRadius := 4.0
+	// convert pixel to grid using image pixel size
+	redLaserCollisionRadius := (redLaserScale * redLaserPxRadius) / (float64(redLaserWidth) / float64(redLaserCols))
+	redLaserCollisionHeight := 2 * redLaserCollisionRadius
 	lifespanSeconds := 4.0 * float64(ebiten.MaxTPS()) // TODO: determine based on max distance for travel
-	redLaserCollisionRadius := 0.01
 	redLaserDamage := 5.0
 	redLaserProjectile := model.NewAnimatedProjectile(
-		0, 0, 0.2, lifespanSeconds, redLaserImg, color.RGBA{}, 1, 3, 4, raycaster.AnchorCenter, redLaserCollisionRadius, 2*redLaserCollisionRadius, redLaserDamage,
+		0, 0, redLaserScale, lifespanSeconds, redLaserImg, color.RGBA{}, redLaserCols, redLaserRows, 4, raycaster.AnchorCenter, redLaserCollisionRadius, redLaserCollisionHeight, redLaserDamage,
 	)
 
 	// give projectile angle facing textures by row index

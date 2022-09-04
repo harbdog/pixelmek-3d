@@ -171,8 +171,9 @@ func (g *Game) loadContent() {
 		}
 
 		for _, position := range s.Positions {
+			// FIXME: collisionRadius/height values should be pixel sizes and based on rendered image scale/size
 			sprite := model.NewSprite(
-				position[0], position[1], s.Scale, spriteImg, color.RGBA{0, 255, 0, 196}, raycaster.AnchorBottom, s.CollisionRadius*s.Scale,
+				position[0], position[1], s.Scale, spriteImg, color.RGBA{0, 255, 0, 196}, raycaster.AnchorBottom, s.CollisionRadius*s.Scale, s.CollisionHeight*s.Scale,
 			)
 			if s.ZPosition != 0 {
 				sprite.PositionZ = s.ZPosition
@@ -204,7 +205,7 @@ func (g *Game) loadMissionSprites() {
 		if _, ok := mechSpriteTemplates[missionMech.Image]; !ok {
 			mechRelPath := fmt.Sprintf("mechs/%s", missionMech.Image)
 			mechImg := getSpriteFromFile(mechRelPath)
-			mechSpriteTemplates[missionMech.Image] = model.NewMechSprite(0, 0, missionMech.Scale, mechImg, 0.3)
+			mechSpriteTemplates[missionMech.Image] = model.NewMechSprite(0, 0, missionMech.Scale, mechImg, 0.3, 0.7)
 		}
 
 		mechTemplate := mechSpriteTemplates[missionMech.Image]
@@ -237,9 +238,10 @@ func (g *Game) loadGameSprites() {
 	// TODO: move these to predefined projectile sprites from their own data source files
 	redLaserImg := getSpriteFromFile("projectiles/beams_red.png")
 	lifespanSeconds := 4.0 * float64(ebiten.MaxTPS()) // TODO: determine based on max distance for travel
+	redLaserCollisionRadius := 0.01
 	redLaserDamage := 5.0
 	redLaserProjectile := model.NewAnimatedProjectile(
-		0, 0, 0.2, lifespanSeconds, redLaserImg, color.RGBA{}, 1, 3, 4, raycaster.AnchorCenter, 0.01, redLaserDamage,
+		0, 0, 0.2, lifespanSeconds, redLaserImg, color.RGBA{}, 1, 3, 4, raycaster.AnchorCenter, redLaserCollisionRadius, 2*redLaserCollisionRadius, redLaserDamage,
 	)
 
 	// give projectile angle facing textures by row index

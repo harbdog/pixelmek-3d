@@ -441,26 +441,33 @@ func (g *Game) fireWeapon() {
 	// firing test projectiles
 	pVelocity := 16.0
 
-	pX, pY, pZ := g.weaponPosition3D(0, -0.1)
+	pX, pY, pZ := g.weaponPosition3D(0, 0)
 	projectile := p.SpawnProjectile(pX, pY, pZ, pAngle, pPitch, pVelocity, g.player.Entity)
 	if projectile != nil {
 		g.sprites.addProjectile(projectile)
 		g.player.TestCooldown = 10
 	}
 
-	pX, pY, pZ = g.weaponPosition3D(-0.1, -0.2)
-	projectile = p.SpawnProjectile(pX, pY, pZ, pAngle, pPitch, pVelocity, g.player.Entity)
-	if projectile != nil {
-		g.sprites.addProjectile(projectile)
-		g.player.TestCooldown = 10
-	}
+	// pX, pY, pZ := g.weaponPosition3D(0, -0.1)
+	// projectile := p.SpawnProjectile(pX, pY, pZ, pAngle, pPitch, pVelocity, g.player.Entity)
+	// if projectile != nil {
+	// 	g.sprites.addProjectile(projectile)
+	// 	g.player.TestCooldown = 10
+	// }
 
-	pX, pY, pZ = g.weaponPosition3D(0.1, -0.2)
-	projectile = p.SpawnProjectile(pX, pY, pZ, pAngle, pPitch, pVelocity, g.player.Entity)
-	if projectile != nil {
-		g.sprites.addProjectile(projectile)
-		g.player.TestCooldown = 10
-	}
+	// pX, pY, pZ = g.weaponPosition3D(-0.1, -0.2)
+	// projectile = p.SpawnProjectile(pX, pY, pZ, pAngle, pPitch, pVelocity, g.player.Entity)
+	// if projectile != nil {
+	// 	g.sprites.addProjectile(projectile)
+	// 	g.player.TestCooldown = 10
+	// }
+
+	// pX, pY, pZ = g.weaponPosition3D(0.1, -0.2)
+	// projectile = p.SpawnProjectile(pX, pY, pZ, pAngle, pPitch, pVelocity, g.player.Entity)
+	// if projectile != nil {
+	// 	g.sprites.addProjectile(projectile)
+	// 	g.player.TestCooldown = 10
+	// }
 }
 
 func (g *Game) fireTestWeaponAtPlayer() {
@@ -478,7 +485,7 @@ func (g *Game) fireTestWeaponAtPlayer() {
 		// firing test projectile at player
 		pVelocity := 16.0
 
-		pX, pY, pZ := m.Position.X, m.Position.Y, m.PositionZ-0.2
+		pX, pY, pZ := m.Position.X, m.Position.Y, m.PositionZ+0.4
 		pLine := geom.Line{X1: pX, Y1: pY, X2: g.player.Position.X, Y2: g.player.Position.Y}
 		pAngle := pLine.Angle()
 		projectile := p.SpawnProjectile(pX, pY, pZ, pAngle, 0, pVelocity, m.Entity)

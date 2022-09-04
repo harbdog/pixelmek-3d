@@ -171,9 +171,12 @@ func (g *Game) loadContent() {
 		}
 
 		for _, position := range s.Positions {
-			// FIXME: collisionRadius/height values should be pixel sizes and based on rendered image scale/size
+			// convert collisionRadius/height pixel values to grid format
+			sWidth, sHeight := spriteImg.Size()
+			collisionRadius := (s.Scale * s.CollisionPxRadius) / float64(sWidth)
+			collisionHeight := (s.Scale * s.CollisionPxHeight) / float64(sHeight)
 			sprite := model.NewSprite(
-				position[0], position[1], s.Scale, spriteImg, color.RGBA{0, 255, 0, 196}, raycaster.AnchorBottom, s.CollisionRadius*s.Scale, s.CollisionHeight*s.Scale,
+				position[0], position[1], s.Scale, spriteImg, color.RGBA{0, 255, 0, 196}, s.Anchor.SpriteAnchor, collisionRadius, collisionHeight,
 			)
 			if s.ZPosition != 0 {
 				sprite.PositionZ = s.ZPosition

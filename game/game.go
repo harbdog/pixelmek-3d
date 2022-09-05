@@ -473,8 +473,9 @@ func (g *Game) fireTestWeaponAtPlayer() {
 		return
 	}
 
-	for m := range g.sprites.mechSprites {
+	for sInterface := range g.sprites.sprites[MechSpriteType] {
 		// firing test projectile at player
+		m := sInterface.(*model.MechSprite)
 		pVelocity := 16.0
 
 		pX, pY, pZ := m.Position.X, m.Position.Y, m.PositionZ+0.4
@@ -486,6 +487,8 @@ func (g *Game) fireTestWeaponAtPlayer() {
 			g.player.TestCooldown = 10
 		}
 	}
+
+	fmt.Printf("projectiles: %d\n", len(g.sprites.sprites[ProjectileSpriteType]))
 }
 
 // weaponPosition3D gets the X, Y and Z axis offsets needed for weapon projectile spawned from a 2-D sprite reference
@@ -523,18 +526,6 @@ func (g *Game) updatePlayerCamera(forceUpdate bool) {
 	g.camera.SetPitchAngle(g.player.Pitch)
 }
 
-func (g *Game) MapEntities() map[*model.Entity]struct{} {
-	numEntities := len(g.sprites.mapSprites) + len(g.sprites.mechSprites)
-	entities := make(map[*model.Entity]struct{}, numEntities)
-	for s := range g.sprites.mapSprites {
-		entities[s.Entity] = struct{}{}
-	}
-	for s := range g.sprites.mechSprites {
-		entities[s.Entity] = struct{}{}
-	}
-	return entities
-}
-
 func (g *Game) updatePlayerPosition(newX, newY float64) {
 	// Update player position
 	newPos, isCollision, collisions := g.getValidMove(g.player.Entity, newX, newY, g.player.PosZ(), true)
@@ -561,7 +552,8 @@ func (g *Game) updateProjectiles() {
 
 	// TODO: perform concurrent projectile updates as much as possible
 
-	for p := range g.sprites.projectiles {
+	for pInterface := range g.sprites.sprites[ProjectileSpriteType] {
+		p := pInterface.(*model.Projectile)
 		p.Lifespan--
 		if p.Lifespan <= 0 {
 			g.sprites.deleteProjectile(p)
@@ -616,7 +608,8 @@ func (g *Game) updateProjectiles() {
 	}
 
 	// Update animated effects
-	for e := range g.sprites.effects {
+	for eInterface := range g.sprites.sprites[EffectSpriteType] {
+		e := eInterface.(*model.Effect)
 		e.Update(g.player.Position)
 		if e.LoopCounter() >= e.LoopCount {
 			g.sprites.deleteEffect(e)
@@ -626,7 +619,8 @@ func (g *Game) updateProjectiles() {
 
 func (g *Game) updateSprites() {
 	// Update for animated sprite movement
-	for s := range g.sprites.mapSprites {
+	for sInterface := range g.sprites.sprites[MapSpriteType] {
+		s := sInterface.(*model.Sprite)
 		if s.HitPoints <= 0 {
 			// TODO: implement sprite destruction animation
 			g.sprites.deleteMapSprite(s)
@@ -637,7 +631,8 @@ func (g *Game) updateSprites() {
 	}
 
 	// Updates for animated mech sprite movement
-	for s := range g.sprites.mechSprites {
+	for sInterface := range g.sprites.sprites[MechSpriteType] {
+		s := sInterface.(*model.MechSprite)
 		// TODO: implement mech armor and structure instead of direct HP
 		if s.HitPoints <= 0 {
 			// TODO: implement mech destruction animation

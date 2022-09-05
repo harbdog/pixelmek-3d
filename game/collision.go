@@ -79,34 +79,41 @@ func (g *Game) getValidMove(entity *model.Entity, moveX, moveY, moveZ float64, c
 	}
 
 	// check sprite collisions
-	for sEntity := range g.MapEntities() {
-		if entity == sEntity || entity.Parent == sEntity || sEntity.CollisionRadius <= 0 {
+	for spriteType, spriteMap := range g.sprites.sprites {
+		if !(spriteType == MapSpriteType || spriteType == MechSpriteType) {
+			// only check collision against certain sprite types (skip projectiles, effects, etc.)
 			continue
 		}
+		for spriteInterface := range spriteMap {
+			sEntity := getEntityFromInterface(spriteInterface)
+			if entity == sEntity || entity.Parent == sEntity || sEntity.CollisionRadius <= 0 {
+				continue
+			}
 
-		// only check intersection of nearby sprites instead of all of them
-		if !pointInProximity(checkDist, newX, newY, sEntity.Position.X, sEntity.Position.Y) {
-			continue
-		}
+			// only check intersection of nearby sprites instead of all of them
+			if !pointInProximity(checkDist, newX, newY, sEntity.Position.X, sEntity.Position.Y) {
+				continue
+			}
 
-		// quick check if intersects in Z-plane
-		zIntersect := zEntityIntersection(newZ, entity, sEntity)
+			// quick check if intersects in Z-plane
+			zIntersect := zEntityIntersection(newZ, entity, sEntity)
 
-		// check if movement line intersects with combined collision radii
-		combinedCircle := geom.Circle{X: sEntity.Position.X, Y: sEntity.Position.Y, Radius: sEntity.CollisionRadius + entity.CollisionRadius}
-		combinedIntersects := geom.LineCircleIntersection(moveLine, combinedCircle, true)
+			// check if movement line intersects with combined collision radii
+			combinedCircle := geom.Circle{X: sEntity.Position.X, Y: sEntity.Position.Y, Radius: sEntity.CollisionRadius + entity.CollisionRadius}
+			combinedIntersects := geom.LineCircleIntersection(moveLine, combinedCircle, true)
 
-		if zIntersect >= 0 && len(combinedIntersects) > 0 {
-			spriteCircle := geom.Circle{X: sEntity.Position.X, Y: sEntity.Position.Y, Radius: sEntity.CollisionRadius}
-			for _, chkPoint := range combinedIntersects {
-				// intersections from combined circle radius indicate center point to check intersection toward sprite collision circle
-				chkLine := geom.Line{X1: chkPoint.X, Y1: chkPoint.Y, X2: sEntity.Position.X, Y2: sEntity.Position.Y}
-				intersectPoints = append(intersectPoints, geom.LineCircleIntersection(chkLine, spriteCircle, true)...)
+			if zIntersect >= 0 && len(combinedIntersects) > 0 {
+				spriteCircle := geom.Circle{X: sEntity.Position.X, Y: sEntity.Position.Y, Radius: sEntity.CollisionRadius}
+				for _, chkPoint := range combinedIntersects {
+					// intersections from combined circle radius indicate center point to check intersection toward sprite collision circle
+					chkLine := geom.Line{X1: chkPoint.X, Y1: chkPoint.Y, X2: sEntity.Position.X, Y2: sEntity.Position.Y}
+					intersectPoints = append(intersectPoints, geom.LineCircleIntersection(chkLine, spriteCircle, true)...)
 
-				for _, intersect := range intersectPoints {
-					collisionEntities = append(
-						collisionEntities, &EntityCollision{entity: sEntity, collision: &intersect, collisionZ: zIntersect},
-					)
+					for _, intersect := range intersectPoints {
+						collisionEntities = append(
+							collisionEntities, &EntityCollision{entity: sEntity, collision: &intersect, collisionZ: zIntersect},
+						)
+					}
 				}
 			}
 		}

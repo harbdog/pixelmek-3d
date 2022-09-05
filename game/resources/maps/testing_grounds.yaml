@@ -171,7 +171,7 @@ sprites:
 # TODO: create mission section/struct for aircraft
 - image: "vtol/attack_chopper.png"
   anchor: "center"
-  scale: 0.5
+  scale: 0.75
   collisionRadius: 12
   collisionHeight: 26
   hitPoints: 25

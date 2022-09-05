@@ -523,7 +523,7 @@ func (g *Game) updatePlayerCamera(forceUpdate bool) {
 	g.camera.SetPitchAngle(g.player.Pitch)
 }
 
-func (g *Game) AllEntities() map[*model.Entity]struct{} {
+func (g *Game) MapEntities() map[*model.Entity]struct{} {
 	numEntities := len(g.sprites.mapSprites) + len(g.sprites.mechSprites)
 	entities := make(map[*model.Entity]struct{}, numEntities)
 	for s := range g.sprites.mapSprites {
@@ -559,6 +559,8 @@ func (g *Game) updateProjectiles() {
 		g.player.TestCooldown--
 	}
 
+	// TODO: perform concurrent projectile updates as much as possible
+
 	for p := range g.sprites.projectiles {
 		p.Lifespan--
 		if p.Lifespan <= 0 {
@@ -573,7 +575,6 @@ func (g *Game) updateProjectiles() {
 			yCheck := trajectory.Y2
 			zCheck := trajectory.Z2
 
-			// TODO: getValidMove needs to be able to take PosZ into account for wall/sprite collisions
 			newPos, isCollision, collisions := g.getValidMove(p.Entity, xCheck, yCheck, zCheck, false)
 			if isCollision || p.PositionZ <= 0 {
 				// for testing purposes, projectiles instantly get deleted when collision occurs

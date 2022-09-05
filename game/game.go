@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"os"
 	"runtime"
+	"sync"
 
 	"image/color"
 	_ "image/png"
@@ -487,8 +488,6 @@ func (g *Game) fireTestWeaponAtPlayer() {
 			g.player.TestCooldown = 10
 		}
 	}
-
-	fmt.Printf("projectiles: %d\n", len(g.sprites.sprites[ProjectileSpriteType]))
 }
 
 // weaponPosition3D gets the X, Y and Z axis offsets needed for weapon projectile spawned from a 2-D sprite reference
@@ -550,7 +549,8 @@ func (g *Game) updateProjectiles() {
 		g.player.TestCooldown--
 	}
 
-	// TODO: perform concurrent projectile updates as much as possible
+	// perform concurrent projectile updates
+	var wg sync.WaitGroup
 
 	for pInterface := range g.sprites.sprites[ProjectileSpriteType] {
 		p := pInterface.(*model.Projectile)
@@ -560,51 +560,8 @@ func (g *Game) updateProjectiles() {
 			continue
 		}
 
-		if p.Velocity != 0 {
-
-			trajectory := geom3d.Line3dFromAngle(p.Position.X, p.Position.Y, p.PositionZ, p.Angle, p.Pitch, p.Velocity)
-			xCheck := trajectory.X2
-			yCheck := trajectory.Y2
-			zCheck := trajectory.Z2
-
-			newPos, isCollision, collisions := g.getValidMove(p.Entity, xCheck, yCheck, zCheck, false)
-			if isCollision || p.PositionZ <= 0 {
-				// for testing purposes, projectiles instantly get deleted when collision occurs
-				g.sprites.deleteProjectile(p)
-
-				var collisionEntity *EntityCollision
-				if len(collisions) > 0 {
-					// apply damage to the first sprite entity that was hit
-					collisionEntity = collisions[0]
-
-					if collisionEntity.entity == g.player.Entity {
-						// TODO: visual response to player being hit
-						println("ouch!")
-					} else {
-						collisionEntity.entity.HitPoints -= p.Damage
-						fmt.Printf("hit for %0.1f (HP: %0.1f)\n", p.Damage, collisionEntity.entity.HitPoints)
-					}
-				}
-
-				// make a sprite/wall getting hit by projectile cause some visual effect
-				if p.ImpactEffect.Sprite != nil {
-					if collisionEntity != nil {
-						// use the first collision point to place effect at
-						newPos = collisionEntity.collision
-					}
-
-					// TODO: give impact effect optional ability to have some velocity based on the projectile movement upon impact if it didn't hit a wall
-					effect := p.SpawnEffect(newPos.X, newPos.Y, p.PositionZ, p.Angle, p.Pitch)
-
-					g.sprites.addEffect(effect)
-				}
-
-			} else {
-				p.Position = newPos
-				p.PositionZ = zCheck
-			}
-		}
-		p.Update(g.player.Position)
+		wg.Add(1)
+		go g.asyncProjectileUpdate(p, &wg)
 	}
 
 	// Update animated effects
@@ -615,6 +572,59 @@ func (g *Game) updateProjectiles() {
 			g.sprites.deleteEffect(e)
 		}
 	}
+
+	wg.Wait()
+}
+
+func (g *Game) asyncProjectileUpdate(p *model.Projectile, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	if p.Velocity != 0 {
+
+		trajectory := geom3d.Line3dFromAngle(p.Position.X, p.Position.Y, p.PositionZ, p.Angle, p.Pitch, p.Velocity)
+		xCheck := trajectory.X2
+		yCheck := trajectory.Y2
+		zCheck := trajectory.Z2
+
+		newPos, isCollision, collisions := g.getValidMove(p.Entity, xCheck, yCheck, zCheck, false)
+		if isCollision || p.PositionZ <= 0 {
+			// for testing purposes, projectiles instantly get deleted when collision occurs
+			//g.sprites.deleteProjectile(p)
+			p.Lifespan = -1
+
+			var collisionEntity *EntityCollision
+			if len(collisions) > 0 {
+				// apply damage to the first sprite entity that was hit
+				collisionEntity = collisions[0]
+
+				if collisionEntity.entity == g.player.Entity {
+					// TODO: visual response to player being hit
+					println("ouch!")
+				} else {
+					collisionEntity.entity.HitPoints -= p.Damage
+					fmt.Printf("hit for %0.1f (HP: %0.1f)\n", p.Damage, collisionEntity.entity.HitPoints)
+				}
+			}
+
+			// make a sprite/wall getting hit by projectile cause some visual effect
+			if p.ImpactEffect.Sprite != nil {
+				if collisionEntity != nil {
+					// use the first collision point to place effect at
+					newPos = collisionEntity.collision
+				}
+
+				// TODO: give impact effect optional ability to have some velocity based on the projectile movement upon impact if it didn't hit a wall
+				effect := p.SpawnEffect(newPos.X, newPos.Y, p.PositionZ, p.Angle, p.Pitch)
+
+				g.sprites.addEffect(effect)
+			}
+
+		} else {
+			p.Position = newPos
+			p.PositionZ = zCheck
+		}
+	}
+	p.Update(g.player.Position)
 }
 
 func (g *Game) updateSprites() {

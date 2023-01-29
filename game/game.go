@@ -176,24 +176,15 @@ func NewGame() *Game {
 	g.loadContent()
 
 	// init player model
-	pX, pY, pZ, pDegrees := 8.5, 3.5, 0.0, 60.0         // TODO: get from mission
-	pUnit := g.createModelMech("timberwolf_prime.yaml") // TODO: get from mission, initially?
+	pX, pY, pZ, pDegrees := 8.5, 3.5, 0.0, 60.0                               // TODO: get from mission
+	pUnit := g.SetPlayerUnit(model.MechResourceType, "timberwolf_prime.yaml") // TODO: get from mission, initially?
 	//pUnit := g.createModelInfantry("heavy_foot.yaml")
 	//pUnit := g.createModelVehicle("srm_carrier.yaml")
 	//pUnit, pZ := g.createModelVTOL("donar.yaml"), 3.0
 
-	mechRelPath := fmt.Sprintf("%s/%s", model.MechResourceType, pUnit.Resource.Image)
-	//mechRelPath := fmt.Sprintf("%s/%s", model.VTOLResourceType, pUnit.Resource.Image)
-	mechImg := getSpriteFromFile(mechRelPath)
-
-	scale := convertHeightToScale(pUnit.Resource.Height, pUnit.Resource.HeightPxRatio)
-	pSprite := render.NewMechSprite(pUnit, scale, mechImg)
-	//pSprite := render.NewVTOLSprite(pUnit, scale, mechImg)
-
-	g.player = NewPlayer(pUnit, pSprite.Sprite, pX, pY, pZ, geom.Radians(pDegrees), 0)
-	g.player.SetCollisionRadius(pUnit.CollisionRadius())
-	g.player.SetCollisionHeight(pUnit.CollisionHeight())
-	g.armament.SetWeapons(g.player.Armament())
+	pUnit.SetPos(&geom.Vector2{X: pX, Y: pY})
+	pUnit.SetPosZ(pZ)
+	pUnit.SetHeading(geom.Radians(pDegrees))
 
 	// init mouse movement mode
 	ebiten.SetCursorMode(ebiten.CursorModeCaptured)

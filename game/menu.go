@@ -7,6 +7,7 @@ import (
 
 	"github.com/gabstv/ebiten-imgui/renderer"
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/harbdog/pixelmek-3d/game/model"
 	"github.com/inkyblackness/imgui-go/v4"
 )
 
@@ -283,67 +284,7 @@ func (m *GameMenu) update(g *Game) {
 		imgui.Separator()
 
 		if imgui.TreeNode("Player Unit") {
-			tableFlags := imgui.TableFlagsBordersV | imgui.TableFlagsBordersOuterH | imgui.TableFlagsResizable | imgui.TableFlagsRowBg | imgui.TableFlagsNoBordersInBody
-			if imgui.BeginTableV("player_unit", 4, tableFlags, imgui.Vec2{}, 0) {
-				imgui.TableSetupColumnV("Chassis", imgui.TableColumnFlagsNoHide, 0, 0)
-				imgui.TableSetupColumnV("Variant", imgui.TableColumnFlagsWidthFixed, m._textBaseWidth*16, 0)
-				imgui.TableSetupColumnV("Tonnage", imgui.TableColumnFlagsWidthFixed, m._textBaseWidth*4, 0)
-				imgui.TableSetupColumnV("Tech", imgui.TableColumnFlagsWidthFixed, m._textBaseWidth*4, 0)
-				imgui.TableHeadersRow()
-
-				imgui.TableNextRow()
-				imgui.TableNextColumn()
-
-				// mechs section
-				if imgui.TreeNodeV("Mechs", imgui.TreeNodeFlagsSpanFullWidth) {
-					imgui.TableNextRow()
-					imgui.TableNextColumn()
-
-					imgui.TreeNodeV("Timberwolfenstein", imgui.TreeNodeFlagsLeaf|imgui.TreeNodeFlagsNoTreePushOnOpen|imgui.TreeNodeFlagsSpanFullWidth)
-					if imgui.IsItemClicked() {
-						fmt.Print("click")
-					}
-					imgui.TableNextColumn()
-					imgui.Text("TBR-PRIME")
-					imgui.TableNextColumn()
-					imgui.Text("75")
-					imgui.TableNextColumn()
-					imgui.Text("Clan")
-
-					imgui.TreePop()
-				}
-				imgui.TableNextColumn()
-				imgui.TableNextColumn()
-				imgui.TableNextColumn()
-
-				// vtol section
-				imgui.TableNextRow()
-				imgui.TableNextColumn()
-
-				if imgui.TreeNodeV("VTOL", imgui.TreeNodeFlagsSpanFullWidth) {
-					imgui.TableNextRow()
-					imgui.TableNextColumn()
-
-					imgui.TreeNodeV("Donar", imgui.TreeNodeFlagsLeaf|imgui.TreeNodeFlagsNoTreePushOnOpen|imgui.TreeNodeFlagsSpanFullWidth)
-					if imgui.IsItemClicked() {
-						fmt.Print("click2")
-					}
-					imgui.TableNextColumn()
-					imgui.Text("VTOL-DONAR")
-					imgui.TableNextColumn()
-					imgui.Text("21")
-					imgui.TableNextColumn()
-					imgui.Text("Clan")
-
-					imgui.TreePop()
-				}
-				imgui.TableNextColumn()
-				imgui.TableNextColumn()
-				imgui.TableNextColumn()
-			}
-
-			imgui.EndTable()
-			imgui.TreePop()
+			m.addPlayerUnitTree(g)
 		}
 
 		imgui.End()
@@ -351,6 +292,124 @@ func (m *GameMenu) update(g *Game) {
 
 	imgui.End()
 	m.mgr.EndFrame()
+}
+
+func (m *GameMenu) addPlayerUnitTree(g *Game) {
+	tableFlags := imgui.TableFlagsBordersV | imgui.TableFlagsBordersOuterH | imgui.TableFlagsResizable | imgui.TableFlagsRowBg | imgui.TableFlagsNoBordersInBody
+	if imgui.BeginTableV("player_unit", 4, tableFlags, imgui.Vec2{}, 0) {
+		imgui.TableSetupColumnV("Chassis", imgui.TableColumnFlagsNoHide, 0, 0)
+		imgui.TableSetupColumnV("Variant", imgui.TableColumnFlagsWidthFixed, m._textBaseWidth*16, 0)
+		imgui.TableSetupColumnV("Tonnage", imgui.TableColumnFlagsWidthFixed, m._textBaseWidth*4, 0)
+		imgui.TableSetupColumnV("Tech", imgui.TableColumnFlagsWidthFixed, m._textBaseWidth*4, 0)
+		imgui.TableHeadersRow()
+
+		// mechs section
+		imgui.TableNextRow()
+		imgui.TableNextColumn()
+
+		if imgui.TreeNodeV("Mech", imgui.TreeNodeFlagsSpanFullWidth) {
+
+			setUnit := func(resourceFile string) {
+				g.SetPlayerUnit(model.MechResourceType, resourceFile)
+			}
+
+			for _, resource := range g.resources.GetMechResourceList() {
+				tonnage := fmt.Sprintf("%0.0f", resource.Tonnage)
+				tech := strings.ToUpper(model.TechBaseString(resource.Tech.TechBase))
+				m.addUnitTableTreeNode(resource.File, resource.Name, resource.Variant, tonnage, tech, setUnit)
+			}
+
+			imgui.TreePop()
+		}
+		imgui.TableNextColumn()
+		imgui.TableNextColumn()
+		imgui.TableNextColumn()
+
+		// vehicles section
+		imgui.TableNextRow()
+		imgui.TableNextColumn()
+
+		if imgui.TreeNodeV("Vehicle", imgui.TreeNodeFlagsSpanFullWidth) {
+
+			setUnit := func(resourceFile string) {
+				g.SetPlayerUnit(model.VehicleResourceType, resourceFile)
+			}
+
+			for _, resource := range g.resources.GetVehicleResourceList() {
+				tonnage := fmt.Sprintf("%0.0f", resource.Tonnage)
+				tech := strings.ToUpper(model.TechBaseString(resource.Tech.TechBase))
+				m.addUnitTableTreeNode(resource.File, resource.Name, resource.Variant, tonnage, tech, setUnit)
+			}
+
+			imgui.TreePop()
+		}
+		imgui.TableNextColumn()
+		imgui.TableNextColumn()
+		imgui.TableNextColumn()
+
+		// vtol section
+		imgui.TableNextRow()
+		imgui.TableNextColumn()
+
+		if imgui.TreeNodeV("VTOL", imgui.TreeNodeFlagsSpanFullWidth) {
+
+			setUnit := func(resourceFile string) {
+				g.SetPlayerUnit(model.VTOLResourceType, resourceFile)
+			}
+
+			for _, resource := range g.resources.GetVTOLResourceList() {
+				tonnage := fmt.Sprintf("%0.0f", resource.Tonnage)
+				tech := strings.ToUpper(model.TechBaseString(resource.Tech.TechBase))
+				m.addUnitTableTreeNode(resource.File, resource.Name, resource.Variant, tonnage, tech, setUnit)
+			}
+
+			imgui.TreePop()
+		}
+		imgui.TableNextColumn()
+		imgui.TableNextColumn()
+		imgui.TableNextColumn()
+
+		// infantry section
+		imgui.TableNextRow()
+		imgui.TableNextColumn()
+
+		if imgui.TreeNodeV("Infantry", imgui.TreeNodeFlagsSpanFullWidth) {
+
+			setUnit := func(resourceFile string) {
+				g.SetPlayerUnit(model.InfantryResourceType, resourceFile)
+			}
+
+			for _, resource := range g.resources.GetInfantryResourceList() {
+				tonnage := "-"
+				tech := strings.ToUpper(model.TechBaseString(resource.Tech.TechBase))
+				m.addUnitTableTreeNode(resource.File, resource.Name, resource.Variant, tonnage, tech, setUnit)
+			}
+
+			imgui.TreePop()
+		}
+		imgui.TableNextColumn()
+		imgui.TableNextColumn()
+		imgui.TableNextColumn()
+	}
+
+	imgui.EndTable()
+	imgui.TreePop()
+}
+
+func (m *GameMenu) addUnitTableTreeNode(unitResource, chassis, variant, tonnage, tech string, clickFunc func(string)) {
+	imgui.TableNextRow()
+	imgui.TableNextColumn()
+
+	imgui.TreeNodeV(chassis, imgui.TreeNodeFlagsLeaf|imgui.TreeNodeFlagsNoTreePushOnOpen|imgui.TreeNodeFlagsSpanFullWidth)
+	if imgui.IsItemClicked() {
+		clickFunc(unitResource)
+	}
+	imgui.TableNextColumn()
+	imgui.Text(variant)
+	imgui.TableNextColumn()
+	imgui.Text(tonnage)
+	imgui.TableNextColumn()
+	imgui.Text(tech)
 }
 
 func (m *GameMenu) draw(screen *ebiten.Image) {

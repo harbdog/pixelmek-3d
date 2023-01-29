@@ -286,11 +286,60 @@ func (m *GameMenu) update(g *Game) {
 			tableFlags := imgui.TableFlagsBordersV | imgui.TableFlagsBordersOuterH | imgui.TableFlagsResizable | imgui.TableFlagsRowBg | imgui.TableFlagsNoBordersInBody
 			if imgui.BeginTableV("player_unit", 4, tableFlags, imgui.Vec2{}, 0) {
 				imgui.TableSetupColumnV("Chassis", imgui.TableColumnFlagsNoHide, 0, 0)
-				imgui.TableSetupColumnV("Variant", imgui.TableColumnFlagsWidthFixed, m._textBaseWidth*10, 0)
+				imgui.TableSetupColumnV("Variant", imgui.TableColumnFlagsWidthFixed, m._textBaseWidth*16, 0)
 				imgui.TableSetupColumnV("Tonnage", imgui.TableColumnFlagsWidthFixed, m._textBaseWidth*4, 0)
 				imgui.TableSetupColumnV("Tech", imgui.TableColumnFlagsWidthFixed, m._textBaseWidth*4, 0)
 				imgui.TableHeadersRow()
 
+				imgui.TableNextRow()
+				imgui.TableNextColumn()
+
+				// mechs section
+				if imgui.TreeNodeV("Mechs", imgui.TreeNodeFlagsSpanFullWidth) {
+					imgui.TableNextRow()
+					imgui.TableNextColumn()
+
+					imgui.TreeNodeV("Timberwolfenstein", imgui.TreeNodeFlagsLeaf|imgui.TreeNodeFlagsNoTreePushOnOpen|imgui.TreeNodeFlagsSpanFullWidth)
+					if imgui.IsItemClicked() {
+						fmt.Print("click")
+					}
+					imgui.TableNextColumn()
+					imgui.Text("TBR-PRIME")
+					imgui.TableNextColumn()
+					imgui.Text("75")
+					imgui.TableNextColumn()
+					imgui.Text("Clan")
+
+					imgui.TreePop()
+				}
+				imgui.TableNextColumn()
+				imgui.TableNextColumn()
+				imgui.TableNextColumn()
+
+				// vtol section
+				imgui.TableNextRow()
+				imgui.TableNextColumn()
+
+				if imgui.TreeNodeV("VTOL", imgui.TreeNodeFlagsSpanFullWidth) {
+					imgui.TableNextRow()
+					imgui.TableNextColumn()
+
+					imgui.TreeNodeV("Donar", imgui.TreeNodeFlagsLeaf|imgui.TreeNodeFlagsNoTreePushOnOpen|imgui.TreeNodeFlagsSpanFullWidth)
+					if imgui.IsItemClicked() {
+						fmt.Print("click2")
+					}
+					imgui.TableNextColumn()
+					imgui.Text("VTOL-DONAR")
+					imgui.TableNextColumn()
+					imgui.Text("21")
+					imgui.TableNextColumn()
+					imgui.Text("Clan")
+
+					imgui.TreePop()
+				}
+				imgui.TableNextColumn()
+				imgui.TableNextColumn()
+				imgui.TableNextColumn()
 			}
 
 			imgui.EndTable()

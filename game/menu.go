@@ -10,9 +10,11 @@ import (
 	"github.com/inkyblackness/imgui-go/v4"
 )
 
-type DemoMenu struct {
+type GameMenu struct {
 	mgr    *renderer.Manager
 	active bool
+
+	_textBaseWidth float32
 
 	// held vars that should not get updated in real-time
 	newRenderWidth     int32
@@ -32,9 +34,9 @@ type DemoMenu struct {
 	newMaxLightRGB        [3]float32
 }
 
-func mainMenu() DemoMenu {
+func mainMenu() GameMenu {
 	mgr := renderer.New(nil)
-	return DemoMenu{
+	return GameMenu{
 		mgr:    mgr,
 		active: false,
 	}
@@ -79,11 +81,11 @@ func (g *Game) closeMenu() {
 	g.menu.active = false
 }
 
-func (m *DemoMenu) layout(w, h int) {
+func (m *GameMenu) layout(w, h int) {
 	m.mgr.SetDisplaySize(float32(w), float32(h))
 }
 
-func (m *DemoMenu) update(g *Game) {
+func (m *GameMenu) update(g *Game) {
 	if !m.active {
 		return
 	}
@@ -91,6 +93,10 @@ func (m *DemoMenu) update(g *Game) {
 	m.mgr.Update(1.0 / float32(ebiten.TPS()))
 
 	m.mgr.BeginFrame()
+
+	if m._textBaseWidth == 0 {
+		m._textBaseWidth = imgui.CalcTextSize("A", false, 0).X
+	}
 
 	windowFlags := imgui.WindowFlagsNone
 	windowFlags |= imgui.WindowFlagsAlwaysAutoResize
@@ -269,11 +275,36 @@ func (m *DemoMenu) update(g *Game) {
 		g.camera.SetLightRGB(g.minLightRGB, g.maxLightRGB)
 	}
 
+	if g.debug {
+		// Show developer/debug options window
+		devWindowFlags := windowFlags ^ imgui.WindowFlagsMenuBar ^ imgui.WindowFlagsAlwaysAutoResize
+		imgui.BeginV("Dev&Debug", nil, devWindowFlags)
+		imgui.Text("Here be DRG-1Ns!")
+		imgui.Separator()
+
+		if imgui.TreeNode("Player Unit") {
+			tableFlags := imgui.TableFlagsBordersV | imgui.TableFlagsBordersOuterH | imgui.TableFlagsResizable | imgui.TableFlagsRowBg | imgui.TableFlagsNoBordersInBody
+			if imgui.BeginTableV("player_unit", 4, tableFlags, imgui.Vec2{}, 0) {
+				imgui.TableSetupColumnV("Chassis", imgui.TableColumnFlagsNoHide, 0, 0)
+				imgui.TableSetupColumnV("Variant", imgui.TableColumnFlagsWidthFixed, m._textBaseWidth*10, 0)
+				imgui.TableSetupColumnV("Tonnage", imgui.TableColumnFlagsWidthFixed, m._textBaseWidth*4, 0)
+				imgui.TableSetupColumnV("Tech", imgui.TableColumnFlagsWidthFixed, m._textBaseWidth*4, 0)
+				imgui.TableHeadersRow()
+
+			}
+
+			imgui.EndTable()
+			imgui.TreePop()
+		}
+
+		imgui.End()
+	}
+
 	imgui.End()
 	m.mgr.EndFrame()
 }
 
-func (m *DemoMenu) draw(screen *ebiten.Image) {
+func (m *GameMenu) draw(screen *ebiten.Image) {
 	if !m.active {
 		return
 	}

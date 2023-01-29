@@ -35,7 +35,7 @@ const (
 
 // Game - This is the main type for your game.
 type Game struct {
-	menu   DemoMenu
+	menu   GameMenu
 	paused bool
 
 	resources *model.ModelResources

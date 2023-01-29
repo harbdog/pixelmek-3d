@@ -176,23 +176,17 @@ func NewGame() *Game {
 	g.loadContent()
 
 	// init player model
-	pX, pY, pZ, pDegrees := 8.5, 3.5, 0.0, 60.0                               // TODO: get from mission
-	pUnit := g.SetPlayerUnit(model.MechResourceType, "timberwolf_prime.yaml") // TODO: get from mission, initially?
+	pX, pY, pDegrees := 8.5, 3.5, 60.0 // TODO: get from mission
+	pUnit := g.SetPlayerUnit(model.MechResourceType, "timberwolf_prime.yaml")
 	//pUnit := g.createModelInfantry("heavy_foot.yaml")
 	//pUnit := g.createModelVehicle("srm_carrier.yaml")
-	//pUnit, pZ := g.createModelVTOL("donar.yaml"), 3.0
+	//pUnit:= g.createModelVTOL("donar.yaml")
 
 	pUnit.SetPos(&geom.Vector2{X: pX, Y: pY})
-	pUnit.SetPosZ(pZ)
 	pUnit.SetHeading(geom.Radians(pDegrees))
 
 	// init mouse movement mode
 	ebiten.SetCursorMode(ebiten.CursorModeCaptured)
-	if pUnit.HasTurret() {
-		g.mouseMode = MouseModeTurret
-	} else {
-		g.mouseMode = MouseModeBody
-	}
 	g.mouseX, g.mouseY = math.MinInt32, math.MinInt32
 
 	//--init camera and renderer--//

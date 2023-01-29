@@ -111,10 +111,26 @@ func (g *Game) SetPlayerUnit(unitType, unitResource string) model.Unit {
 		pX, pY, pZ, pH = g.player.Pos().X, g.player.Pos().Y, g.player.PosZ(), g.player.Heading()
 	}
 
+	if unitType == model.VTOLResourceType {
+		if pZ < unit.CollisionHeight() {
+			// for VTOL, adjust Z position to not be stuck in the ground
+			pZ = unit.CollisionHeight()
+		}
+	} else {
+		// adjust Z position to be on the ground
+		pZ = 0
+	}
+
 	g.player = NewPlayer(unit, unitSprite, pX, pY, pZ, pH, 0)
 	g.player.SetCollisionRadius(unit.CollisionRadius())
 	g.player.SetCollisionHeight(unit.CollisionHeight())
 	g.armament.SetWeapons(g.player.Armament())
+
+	if unit.HasTurret() {
+		g.mouseMode = MouseModeTurret
+	} else {
+		g.mouseMode = MouseModeBody
+	}
 
 	return unit
 }

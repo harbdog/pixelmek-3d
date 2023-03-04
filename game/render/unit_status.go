@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2/vector"
 	"github.com/harbdog/pixelmek-3d/game/model"
 	"github.com/tinne26/etxt"
 	"github.com/tinne26/etxt/efixed"
@@ -32,7 +32,7 @@ type UnitStatus struct {
 	targetReticle  *TargetReticle
 }
 
-//NewUnitStatus creates a unit status element image to be rendered on demand
+// NewUnitStatus creates a unit status element image to be rendered on demand
 func NewUnitStatus(isPlayer bool, font *Font) *UnitStatus {
 	// create and configure font renderer
 	renderer := etxt.NewStdRenderer()
@@ -111,7 +111,7 @@ func (u *UnitStatus) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions) {
 		}
 
 		sAlpha := uint8(int(bColor.A) / 3)
-		ebitenutil.DrawRect(screen, sX, sY, sW, sH, color.RGBA{bColor.R, bColor.G, bColor.B, sAlpha})
+		vector.DrawFilledRect(screen, float32(sX), float32(sY), float32(sW), float32(sH), color.RGBA{bColor.R, bColor.G, bColor.B, sAlpha})
 	}
 
 	// create static outline image of unit

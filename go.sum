@@ -131,10 +131,8 @@ github.com/google/uuid v1.1.2/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+
 github.com/googleapis/gax-go/v2 v2.0.4/go.mod h1:0Wqv26UfaUD9n4G6kQubkQ+KchISgw+vpHVxEJEs9eg=
 github.com/googleapis/gax-go/v2 v2.0.5/go.mod h1:DWXyrwAJ9X0FpwwEdw+IPEYBICEFu5mhpdKc/us6bOk=
 github.com/googleapis/google-cloud-go-testing v0.0.0-20200911160855-bcd43fbb19e8/go.mod h1:dvDLG8qkwmyD9a/MJJN3XJcT3xFxOKAvTZGvuZmac9g=
-github.com/hajimehoshi/ebiten/v2 v2.5.0-rc.2 h1:V+P3AdKo0Cf/AHpAlgUQW2P0sSqFwVm7qXd0pGB8NOs=
-github.com/hajimehoshi/ebiten/v2 v2.5.0-rc.2/go.mod h1:mnHSOVysTr/nUZrN1lBTRqhK4NG+T9NR3JsJP2rCppk=
-github.com/hajimehoshi/ebiten/v2 v2.5.0-rc.2.0.20230318020501-ca3049a25d9b h1:WV7XsBgkGNK9w2UslHoHvETpWc4ZefXw/22/cv9Bu7Q=
-github.com/hajimehoshi/ebiten/v2 v2.5.0-rc.2.0.20230318020501-ca3049a25d9b/go.mod h1:mnHSOVysTr/nUZrN1lBTRqhK4NG+T9NR3JsJP2rCppk=
+github.com/hajimehoshi/ebiten/v2 v2.5.0-rc.3 h1:RkHVfoYgm/9PgB9hBVs9WIxwfeb20OzVk/Fih33axNw=
+github.com/hajimehoshi/ebiten/v2 v2.5.0-rc.3/go.mod h1:mnHSOVysTr/nUZrN1lBTRqhK4NG+T9NR3JsJP2rCppk=
 github.com/harbdog/raycaster-go v1.8.2 h1:naEfKUI3kAueUR/I8S64LR0ftSFBvullF1ZttaflMLQ=
 github.com/harbdog/raycaster-go v1.8.2/go.mod h1:CoETh4pPX87LqPyzwPdbsCzOVnIoylg7EdI2Ye4qRfs=
 github.com/hashicorp/golang-lru v0.5.0/go.mod h1:/m3WP610KZHVQ1SGc6re/UDhFvYD7pJ4Ao+sR/qLZy8=

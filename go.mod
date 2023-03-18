@@ -5,19 +5,19 @@ go 1.19
 require (
 	github.com/gabstv/ebiten-imgui v0.5.0
 	github.com/go-playground/validator/v10 v10.11.1
-	github.com/hajimehoshi/ebiten/v2 v2.5.0-alpha.13
+	github.com/hajimehoshi/ebiten/v2 v2.5.0-rc.2
 	github.com/harbdog/raycaster-go v1.8.2
 	github.com/inkyblackness/imgui-go/v4 v4.4.0
 	github.com/jinzhu/copier v0.3.5
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/viper v1.12.0
 	github.com/tinne26/etxt v0.0.7
-	golang.org/x/image v0.5.0
+	golang.org/x/image v0.6.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
-	github.com/ebitengine/purego v0.2.0 // indirect
+	github.com/ebitengine/purego v0.3.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20221017161538-93cebf72946b // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
@@ -38,8 +38,8 @@ require (
 	golang.org/x/exp v0.0.0-20200224162631-6cc2880d07d6 // indirect
 	golang.org/x/mobile v0.0.0-20230301163155-e0f57694e12c // indirect
 	golang.org/x/sync v0.1.0 // indirect
-	golang.org/x/sys v0.5.0 // indirect
-	golang.org/x/text v0.7.0 // indirect
+	golang.org/x/sys v0.6.0 // indirect
+	golang.org/x/text v0.8.0 // indirect
 	gopkg.in/ini.v1 v1.66.4 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )

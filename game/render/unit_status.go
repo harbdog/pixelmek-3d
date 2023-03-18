@@ -6,7 +6,7 @@ import (
 	"image/color"
 	"strings"
 
-	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/colorm"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"github.com/harbdog/pixelmek-3d/game/model"
 	"github.com/tinne26/etxt"
@@ -117,9 +117,10 @@ func (u *UnitStatus) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions) {
 	// create static outline image of unit
 	uTexture := u.unit.StaticTexture()
 
-	op := &ebiten.DrawImageOptions{}
+	op := &colorm.DrawImageOptions{}
 	// Reset RGB (not Alpha) 0 forcibly
-	op.ColorM.Scale(0, 0, 0, 1)
+	var cm colorm.ColorM
+	cm.Scale(0, 0, 0, 1)
 
 	// Set unit image color based on health status
 	var uColor color.RGBA
@@ -135,7 +136,7 @@ func (u *UnitStatus) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions) {
 		}
 	}
 	r, g, b := float64(uColor.R)/255, float64(uColor.G)/255, float64(uColor.B)/255
-	op.ColorM.Translate(r, g, b, 0)
+	cm.Translate(r, g, b, 0)
 
 	iH := bounds.Dy()
 	uH := uTexture.Bounds().Dy()
@@ -149,7 +150,7 @@ func (u *UnitStatus) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions) {
 
 	op.GeoM.Scale(uScale, uScale)
 	op.GeoM.Translate(sX, sY+sH/2-uScale*float64(uH)/2)
-	screen.DrawImage(uTexture, op)
+	colorm.DrawImage(screen, uTexture, cm, op)
 
 	// setup text color
 	tColor := _colorStatusText

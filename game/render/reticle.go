@@ -65,33 +65,33 @@ func (t *TargetReticle) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions) {
 	var op *ebiten.DrawImageOptions
 	geoM := ebiten.GeoM{}
 	geoM.Scale(rScale, rScale)
-	colorM := ebiten.ColorM{}
-	colorM.ScaleWithColor(rColor)
+	colorScale := ebiten.ColorScale{}
+	colorScale.ScaleWithColor(rColor)
 
 	// top left corner
 	t.SetTextureFrame(0)
-	op = &ebiten.DrawImageOptions{ColorM: colorM, GeoM: geoM}
+	op = &ebiten.DrawImageOptions{ColorScale: colorScale, GeoM: geoM}
 	op.Filter = ebiten.FilterNearest
 	op.GeoM.Translate(minX-rOff, minY-rOff)
 	screen.DrawImage(t.Texture(), op)
 
 	// top right corner
 	t.SetTextureFrame(1)
-	op = &ebiten.DrawImageOptions{ColorM: colorM, GeoM: geoM}
+	op = &ebiten.DrawImageOptions{ColorScale: colorScale, GeoM: geoM}
 	op.Filter = ebiten.FilterNearest
 	op.GeoM.Translate(maxX-rOff, minY-rOff)
 	screen.DrawImage(t.Texture(), op)
 
 	// bottom left corner
 	t.SetTextureFrame(2)
-	op = &ebiten.DrawImageOptions{ColorM: colorM, GeoM: geoM}
+	op = &ebiten.DrawImageOptions{ColorScale: colorScale, GeoM: geoM}
 	op.Filter = ebiten.FilterNearest
 	op.GeoM.Translate(minX-rOff, maxY-rOff)
 	screen.DrawImage(t.Texture(), op)
 
 	// bottom right corner
 	t.SetTextureFrame(3)
-	op = &ebiten.DrawImageOptions{ColorM: colorM, GeoM: geoM}
+	op = &ebiten.DrawImageOptions{ColorScale: colorScale, GeoM: geoM}
 	op.Filter = ebiten.FilterNearest
 	op.GeoM.Translate(maxX-rOff, maxY-rOff)
 	screen.DrawImage(t.Texture(), op)
@@ -129,12 +129,12 @@ func (t *NavReticle) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions) {
 	var op *ebiten.DrawImageOptions
 	geoM := ebiten.GeoM{}
 	geoM.Scale(rScale, rScale)
-	colorM := ebiten.ColorM{}
-	colorM.ScaleWithColor(rColor)
+	colorScale := ebiten.ColorScale{}
+	colorScale.ScaleWithColor(rColor)
 
 	rX, rY := 1+minX+dX/2-rScale*float64(t.Width())/2, 1+minY+dY/2-rScale*float64(t.Height())/2
 
-	op = &ebiten.DrawImageOptions{ColorM: colorM, GeoM: geoM}
+	op = &ebiten.DrawImageOptions{ColorScale: colorScale, GeoM: geoM}
 	op.Filter = ebiten.FilterNearest
 	op.GeoM.Translate(rX, rY)
 	screen.DrawImage(t.Texture(), op)

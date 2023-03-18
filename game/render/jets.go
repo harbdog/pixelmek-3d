@@ -69,7 +69,7 @@ func (j *JumpJetIndicator) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions,
 		rColor = hudOpts.Color
 	}
 
-	vector.DrawFilledRect(screen, rX, rY, rW, rH, rColor)
+	vector.DrawFilledRect(screen, rX, rY, rW, rH, rColor, false)
 
 	// jet indicator outline
 	oColor := _colorJetsOutline
@@ -81,7 +81,7 @@ func (j *JumpJetIndicator) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions,
 
 	var oT float32 = 2 // TODO: calculate line thickness based on image height
 	oX, oY, oW, oH := float32(midX-jW/2), float32(bY), float32(jW), float32(jH)
-	vector.StrokeRect(screen, oX, oY, oW, oH, oT, oColor)
+	vector.StrokeRect(screen, oX, oY, oW, oH, oT, oColor, false)
 
 	// jet indicator text
 	tColor := _colorJetsText

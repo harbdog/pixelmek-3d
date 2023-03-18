@@ -68,7 +68,7 @@ func (t *Throttle) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions, velocit
 	var velocityRatio float32 = float32(velocity / (maxVelocity + maxReverse))
 	vW, vH := float32(bW)/6, -velocityRatio*float32(bH)
 	//vAlpha := uint8(4 * int(hudOpts.Color.A) / 5)
-	vector.DrawFilledRect(screen, float32(bX)+maxX-vW, float32(bY)+zeroY, vW, vH, vColor)
+	vector.DrawFilledRect(screen, float32(bX)+maxX-vW, float32(bY)+zeroY, vW, vH, vColor, false)
 
 	// throttle indicator outline
 	oColor := _colorThrottleOutline
@@ -78,7 +78,7 @@ func (t *Throttle) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions, velocit
 
 	var oT float32 = 2 // TODO: calculate line thickness based on image height
 	oX, oY, oW, oH := float32(bX)+float32(maxX-vW), float32(bY), float32(vW), float32(bH)
-	vector.StrokeRect(screen, oX, oY, oW, oH, oT, oColor)
+	vector.StrokeRect(screen, oX, oY, oW, oH, oT, oColor, false)
 
 	// current throttle velocity text
 	tColor := _colorThrottleText
@@ -115,5 +115,5 @@ func (t *Throttle) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions, velocit
 	} else if iY > float32(bH)-iH {
 		iY = float32(bH) - iH
 	}
-	vector.DrawFilledRect(screen, iX, float32(bY)+iY, iW, iH, vColor)
+	vector.DrawFilledRect(screen, iX, float32(bY)+iY, iW, iH, vColor, false)
 }

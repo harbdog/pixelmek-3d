@@ -111,7 +111,7 @@ func (u *UnitStatus) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions) {
 		}
 
 		sAlpha := uint8(int(bColor.A) / 3)
-		vector.DrawFilledRect(screen, float32(sX), float32(sY), float32(sW), float32(sH), color.RGBA{bColor.R, bColor.G, bColor.B, sAlpha})
+		vector.DrawFilledRect(screen, float32(sX), float32(sY), float32(sW), float32(sH), color.RGBA{bColor.R, bColor.G, bColor.B, sAlpha}, false)
 	}
 
 	// create static outline image of unit

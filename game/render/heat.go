@@ -79,7 +79,7 @@ func (h *HeatIndicator) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions, he
 		}
 	}
 
-	vector.DrawFilledRect(screen, hX, hY, hW, hH, hColor)
+	vector.DrawFilledRect(screen, hX, hY, hW, hH, hColor, false)
 
 	// TODO: make current heat level box appear to flash when near/over maxHeat?
 
@@ -89,7 +89,7 @@ func (h *HeatIndicator) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions, he
 
 	var oT float32 = 2 // TODO: calculate line thickness based on image height
 	oX, oY, oW, oH := float32(bX), float32(bY), float32(bW), float32(bH)/2
-	vector.StrokeRect(screen, oX, oY, oW, oH, oT, oColor)
+	vector.StrokeRect(screen, oX, oY, oW, oH, oT, oColor, false)
 
 	// current heat level text
 	tColor := _colorHeatText

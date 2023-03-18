@@ -108,7 +108,7 @@ func (c *Compass) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions, heading,
 	relTurretRatio := relTurretDeg / maxTurretDeg
 	tW, tH := float32(relTurretRatio)*float32(bW)/2, float32(bH/4)
 	tAlpha := uint8(4 * int(turretColor.A) / 5)
-	vector.DrawFilledRect(screen, midX, topY, tW, tH, color.RGBA{turretColor.R, turretColor.G, turretColor.B, tAlpha})
+	vector.DrawFilledRect(screen, midX, topY, tW, tH, color.RGBA{turretColor.R, turretColor.G, turretColor.B, tAlpha}, false)
 
 	// compass pips
 	pipColor := _colorCompassPips
@@ -139,7 +139,7 @@ func (c *Compass) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions, heading,
 			// pip shows relative based on index (i) where negative is right of center, positive is left
 			iRatio := float32(-i) / float32(maxTurretDeg)
 			iX := float32(bX) + float32(bW)/2 + iRatio*float32(bW)/2
-			vector.DrawFilledRect(screen, iX-pipWidth/2, topY, pipWidth, pipHeight, pipColor)
+			vector.DrawFilledRect(screen, iX-pipWidth/2, topY, pipWidth, pipHeight, pipColor, false)
 
 			// TODO: switch statement
 			var pipDegStr string
@@ -168,7 +168,7 @@ func (c *Compass) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions, heading,
 	}
 
 	hW, hH := float32(5.0), float32(bH)/2 // TODO: calculate line thickness based on image height
-	vector.DrawFilledRect(screen, midX-hW/2, topY, hW, hH, headingColor)
+	vector.DrawFilledRect(screen, midX-hW/2, topY, hW, hH, headingColor, false)
 
 	if c.targetIndicator.enabled {
 		// TODO: draw target indicator slightly better
@@ -193,7 +193,7 @@ func (c *Compass) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions, heading,
 				iRatio := float32(-i) / float32(maxTurretDeg)
 				iX := float32(bX) + float32(bW)/2 + iRatio*float32(bW)/2
 
-				vector.DrawFilledCircle(screen, iX-iRadius, topY-iRadius, iRadius, iColor)
+				vector.DrawFilledCircle(screen, iX-iRadius, topY-iRadius, iRadius, iColor, false)
 				iRendered = true
 				break
 			}
@@ -213,7 +213,7 @@ func (c *Compass) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions, heading,
 
 			iRadius := float32(bH) / 12
 			iX := float32(bX) + float32(bW)/2 + iRatio*float32(bW)/2
-			vector.DrawFilledCircle(screen, iX-iRadius, topY-iRadius, iRadius, iColor)
+			vector.DrawFilledCircle(screen, iX-iRadius, topY-iRadius, iRadius, iColor, false)
 		}
 	}
 
@@ -240,7 +240,7 @@ func (c *Compass) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions, heading,
 				iRatio := float32(-i) / float32(maxTurretDeg)
 				iX := float32(bX) + float32(bW)/2 + iRatio*float32(bW)/2
 
-				vector.DrawFilledCircle(screen, iX-iRadius, topY-iRadius, iRadius, iColor)
+				vector.DrawFilledCircle(screen, iX-iRadius, topY-iRadius, iRadius, iColor, false)
 				iRendered = true
 				break
 			}
@@ -260,7 +260,7 @@ func (c *Compass) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions, heading,
 
 			iRadius := float32(bH) / 12
 			iX := float32(bX) + float32(bW)/2 + iRatio*float32(bW)/2
-			vector.DrawFilledCircle(screen, iX-iRadius, topY-iRadius, iRadius, iColor)
+			vector.DrawFilledCircle(screen, iX-iRadius, topY-iRadius, iRadius, iColor, false)
 		}
 	}
 }

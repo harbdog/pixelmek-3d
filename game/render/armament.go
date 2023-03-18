@@ -156,7 +156,7 @@ func (a *Armament) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions) {
 			// TODO: move to Weapon update and add margins
 			var wT float32 = 2 // TODO: calculate line thickness based on image height
 			wW, wH := float32(wWidth), float32(wHeight)
-			vector.StrokeRect(screen, float32(wX), float32(wY), wW, wH, wT, weaponColor)
+			vector.StrokeRect(screen, float32(wX), float32(wY), wW, wH, wT, weaponColor, false)
 		}
 	}
 }

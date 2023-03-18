@@ -119,7 +119,7 @@ func (r *Radar) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions, position *
 
 	var oT float32 = 2 // TODO: calculate line thickness based on image height
 	oAlpha := uint8(oColor.A / 5)
-	vector.StrokeCircle(screen, float32(midX), float32(midY), float32(radius), oT, color.RGBA{oColor.R, oColor.G, oColor.B, oAlpha})
+	vector.StrokeCircle(screen, float32(midX), float32(midY), float32(radius), oT, color.RGBA{oColor.R, oColor.G, oColor.B, oAlpha}, false)
 
 	// Draw any walls/boundaries within the radar range using lines that make up the map wall boundaries
 	posX, posY := position.X, position.Y
@@ -153,21 +153,21 @@ func (r *Radar) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions, position *
 		rLine1 := geom.LineFromAngle(midX, midY, angle1, dist1*radarHudSizeFactor)
 		rLine2 := geom.LineFromAngle(midX, midY, angle2, dist2*radarHudSizeFactor)
 
-		vector.StrokeLine(screen, float32(rLine1.X2), float32(rLine1.Y2), float32(rLine2.X2), float32(rLine2.Y2), oT, wColor)
+		vector.StrokeLine(screen, float32(rLine1.X2), float32(rLine1.Y2), float32(rLine2.X2), float32(rLine2.Y2), oT, wColor, false)
 	}
 
 	// Draw turret angle reference lines
 	fovAngle := geom.Radians(fovDegrees)
 	turretL := geom.LineFromAngle(midX, midY, radarTurretAngle-fovAngle/2, radius)
 	turretR := geom.LineFromAngle(midX, midY, radarTurretAngle+fovAngle/2, radius)
-	vector.StrokeLine(screen, float32(turretL.X1), float32(turretL.Y1), float32(turretL.X2), float32(turretL.Y2), oT, oColor)
-	vector.StrokeLine(screen, float32(turretR.X1), float32(turretR.Y1), float32(turretR.X2), float32(turretR.Y2), oT, oColor)
+	vector.StrokeLine(screen, float32(turretL.X1), float32(turretL.Y1), float32(turretL.X2), float32(turretL.Y2), oT, oColor, false)
+	vector.StrokeLine(screen, float32(turretR.X1), float32(turretR.Y1), float32(turretR.X2), float32(turretR.Y2), oT, oColor, false)
 
 	// Draw unit reference shape
 	var refW, refH, refT float32 = 14, 5, 3 // TODO: calculate line thickness based on image size
-	vector.DrawFilledRect(screen, float32(midX)-refW/2, float32(midY)-refT/2, refW, refT, rColor)
-	vector.DrawFilledRect(screen, float32(midX)-refW/2, float32(midY)-refH, refT, refH, rColor)
-	vector.DrawFilledRect(screen, float32(midX)+refW/2-refT, float32(midY)-refH, refT, refH, rColor)
+	vector.DrawFilledRect(screen, float32(midX)-refW/2, float32(midY)-refT/2, refW, refT, rColor, false)
+	vector.DrawFilledRect(screen, float32(midX)-refW/2, float32(midY)-refH, refT, refH, rColor, false)
+	vector.DrawFilledRect(screen, float32(midX)+refW/2-refT, float32(midY)-refH, refT, refH, rColor, false)
 
 	// Draw nav points
 	nColor := _colorRadarOutline
@@ -186,10 +186,10 @@ func (r *Radar) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions, position *
 			// draw target nav circle around lighter colored nav
 			tAlpha := uint8(nColor.A / 3)
 			tColor := color.RGBA{R: nColor.R, G: nColor.G, B: nColor.B, A: tAlpha}
-			vector.DrawFilledCircle(screen, float32(nLine.X2), float32(nLine.Y2), 8, tColor) // TODO: calculate thickness based on image size
+			vector.DrawFilledCircle(screen, float32(nLine.X2), float32(nLine.Y2), 8, tColor, false) // TODO: calculate thickness based on image size
 		}
 
-		vector.DrawFilledCircle(screen, float32(nLine.X2), float32(nLine.Y2), 3, nColor) // TODO: calculate thickness based on image size
+		vector.DrawFilledCircle(screen, float32(nLine.X2), float32(nLine.Y2), 3, nColor, false) // TODO: calculate thickness based on image size
 	}
 
 	// Draw radar blips
@@ -209,9 +209,9 @@ func (r *Radar) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions, position *
 			// draw target square around lighter colored blip
 			tAlpha := uint8(bColor.A / 3)
 			tColor := color.RGBA{R: bColor.R, G: bColor.G, B: bColor.B, A: tAlpha}
-			vector.DrawFilledRect(screen, float32(bLine.X2-6), float32(bLine.Y2-6), 12, 12, tColor) // TODO: calculate thickness based on image size
+			vector.DrawFilledRect(screen, float32(bLine.X2-6), float32(bLine.Y2-6), 12, 12, tColor, false) // TODO: calculate thickness based on image size
 		}
 
-		vector.DrawFilledRect(screen, float32(bLine.X2)-2, float32(bLine.Y2-2), 4, 4, bColor) // TODO: calculate thickness based on image size
+		vector.DrawFilledRect(screen, float32(bLine.X2)-2, float32(bLine.Y2-2), 4, 4, bColor, false) // TODO: calculate thickness based on image size
 	}
 }

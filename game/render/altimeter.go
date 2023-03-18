@@ -77,7 +77,7 @@ func (a *Altimeter) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions, altitu
 	pitchRatio := relPitchDeg / maxPitchDeg
 	tW, tH := float32(bW)/4, float32(pitchRatio)*float32(bH/2)
 	pAlpha := uint8(4 * int(pitchColor.A) / 5)
-	vector.DrawFilledRect(screen, midX, midY, tW, tH, color.RGBA{pitchColor.R, pitchColor.G, pitchColor.B, pAlpha})
+	vector.DrawFilledRect(screen, midX, midY, tW, tH, color.RGBA{pitchColor.R, pitchColor.G, pitchColor.B, pAlpha}, false)
 
 	// altimeter pips
 	pipColor := _colorAltimeterPips
@@ -104,7 +104,7 @@ func (a *Altimeter) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions, altitu
 			// pip shows relative based on index (i) where negative is above center, positive is below
 			iRatio := float32(-i) / maxAltitude
 			iY := float32(bY) + float32(bH)/2 + iRatio*float32(bH)/2
-			vector.DrawFilledRect(screen, midX, iY-pipHeight/2, pipWidth, pipHeight, pipColor)
+			vector.DrawFilledRect(screen, midX, iY-pipHeight/2, pipWidth, pipHeight, pipColor, false)
 
 			var pipAltStr string = fmt.Sprintf("%d", actualAlt)
 
@@ -121,5 +121,5 @@ func (a *Altimeter) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions, altitu
 	}
 
 	hW, hH := 2*float32(bW)/3, float32(5.0) // TODO: calculate line thickness based on image height
-	vector.DrawFilledRect(screen, midX, midY-hH/2, hW, hH, altColor)
+	vector.DrawFilledRect(screen, midX, midY-hH/2, hW, hH, altColor, false)
 }

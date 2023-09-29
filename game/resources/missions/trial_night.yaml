@@ -11,7 +11,7 @@ dropZone:
 lighting:
   falloff: -500
   illumination: 0
-  minLightRGB: [8, 12, 16]
+  minLightRGB: [16, 24, 30]
   maxLightRGB: [255, 255, 255]
 floorBox:
   image: "floors/floor_green_night.png"

@@ -223,7 +223,8 @@ func (g *Game) fireTestWeaponAtPlayer() {
 			}
 
 			if weaponFired {
-				sprite.SetIlluminationPeriod(5000, 0.1)
+				// illuminate source sprite unit firing the weapon
+				sprite.SetIlluminationPeriod(5000, 0.35)
 			}
 
 			return true
@@ -374,8 +375,14 @@ func (g *Game) asyncProjectileUpdate(p *render.ProjectileSprite, wg *sync.WaitGr
 						// TODO: visual response to player being hit
 						log.Debugf("[%0.2f%s] player hit for %0.1f (HP: %0.1f/%0.0f)", percentHP, "%", damage, hp, maxHP)
 					} else {
-						// TODO: visual method for showing damage was done
+						// TODO: ui indicator for showing damage was done
 						log.Debugf("[%0.2f%s] unit hit for %0.1f (HP: %0.1f/%0.0f)", percentHP, "%", damage, hp, maxHP)
+
+						// illuminate sprite being hit by projectile weapon
+						sprite := g.getSpriteFromEntity(entity)
+						if sprite != nil {
+							sprite.SetIlluminationPeriod(5000, 0.35)
+						}
 					}
 				}
 			}
@@ -392,7 +399,6 @@ func (g *Game) asyncProjectileUpdate(p *render.ProjectileSprite, wg *sync.WaitGr
 					newPos = collisionEntity.collision
 				}
 
-				// TODO: give impact effect optional ability to have some velocity based on the projectile movement upon impact if it didn't hit a wall
 				effect := p.SpawnEffect(newPos.X, newPos.Y, newPosZ, p.Heading(), p.Pitch())
 
 				g.sprites.addEffect(effect)
@@ -505,6 +511,12 @@ func (g *Game) spawnDelayedProjectile(p *DelayedProjectileSpawn) {
 			} else {
 				g.audio.PlayExternalWeaponFireAudio(g, w, e)
 			}
+		}
+
+		s := g.getSpriteFromEntity(p.parent)
+		if s != nil {
+			// illuminate source sprite unit firing the projectile
+			s.SetIlluminationPeriod(5000, 0.35)
 		}
 	}
 }

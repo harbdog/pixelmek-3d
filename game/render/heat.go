@@ -7,7 +7,6 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"github.com/tinne26/etxt"
-	"github.com/tinne26/etxt/efixed"
 )
 
 var (
@@ -46,8 +45,7 @@ func (h *HeatIndicator) updateFontSize(width, height int) {
 		pxSize = 1
 	}
 
-	fractSize, _ := efixed.FromFloat64(pxSize)
-	h.fontRenderer.SetSizePxFract(fractSize)
+	h.fontRenderer.SetSizePx(int(pxSize))
 }
 
 func (h *HeatIndicator) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions, heat, maxHeat, dissipation float64) {

@@ -6,7 +6,6 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"github.com/tinne26/etxt"
-	"github.com/tinne26/etxt/efixed"
 )
 
 var (
@@ -42,8 +41,7 @@ func (j *JumpJetIndicator) updateFontSize(width, height int) {
 		pxSize = 1
 	}
 
-	fractSize, _ := efixed.FromFloat64(pxSize)
-	j.fontRenderer.SetSizePxFract(fractSize)
+	j.fontRenderer.SetSizePx(int(pxSize))
 }
 
 func (j *JumpJetIndicator) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions, jumpJetDuration, maxJumpJetDuration float64) {

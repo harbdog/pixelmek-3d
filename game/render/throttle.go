@@ -7,7 +7,6 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"github.com/tinne26/etxt"
-	"github.com/tinne26/etxt/efixed"
 )
 
 var (
@@ -45,8 +44,7 @@ func (t *Throttle) updateFontSize(width, height int) {
 		pxSize = 1
 	}
 
-	fractSize, _ := efixed.FromFloat64(pxSize)
-	t.fontRenderer.SetSizePxFract(fractSize)
+	t.fontRenderer.SetSizePx(int(pxSize))
 }
 
 func (t *Throttle) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions, velocity, targetVelocity, velocityZ, maxVelocity, maxReverse float64) {

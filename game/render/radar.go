@@ -9,7 +9,6 @@ import (
 	"github.com/harbdog/pixelmek-3d/game/model"
 	"github.com/harbdog/raycaster-go/geom"
 	"github.com/tinne26/etxt"
-	"github.com/tinne26/etxt/efixed"
 )
 
 var (
@@ -64,8 +63,7 @@ func (r *Radar) updateFontSize(width, height int) {
 		pxSize = 1
 	}
 
-	fractSize, _ := efixed.FromFloat64(pxSize)
-	r.fontRenderer.SetSizePxFract(fractSize)
+	r.fontRenderer.SetSizePx(int(pxSize))
 }
 
 func (r *Radar) SetMapLines(lines []*geom.Line) {

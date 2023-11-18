@@ -84,53 +84,53 @@ func (g *Game) drawHUD(screen *ebiten.Image) {
 
 	if !g.player.IsPowered() {
 		switch g.player.Unit.(type) {
-		// case *model.Mech:
-		// 	m := g.player.Unit.(*model.Mech)
-		// 	if m.PowerOnTimer > 0 {
-		// 		powerTime := model.TICKS_PER_SECOND * 3 // TODO: place mech power on time in constant
-		// 		remainTime := float64(m.PowerOnTimer)
-		// 		hudPercent := 1 - (remainTime / powerTime)
+		case *model.Mech:
+			m := g.player.Unit.(*model.Mech)
+			if m.PowerOnTimer > 0 {
+				powerTime := model.TICKS_PER_SECOND * 3 // TODO: place mech power on time in constant
+				remainTime := float64(m.PowerOnTimer)
+				hudPercent := 1 - (remainTime / powerTime)
 
-		// 		// TODO: put these HUD element in a map so they can be easily looped over
-		// 		if g.playerStatus != nil {
-		// 			g.playerStatus.SetScale(hudPercent)
-		// 		}
+				// TODO: put these HUD element in a map so they can be easily looped over
+				if g.playerStatus != nil {
+					g.playerStatus.SetScale(hudPercent)
+				}
 
-		// 		if g.targetStatus != nil {
-		// 			g.targetStatus.SetScale(hudPercent)
-		// 		}
+				if g.targetStatus != nil {
+					g.targetStatus.SetScale(hudPercent)
+				}
 
-		// 		if g.navStatus != nil {
-		// 			g.navStatus.SetScale(hudPercent)
-		// 		}
+				if g.navStatus != nil {
+					g.navStatus.SetScale(hudPercent)
+				}
 
-		// 		if g.compass != nil {
-		// 			g.compass.SetScale(hudPercent)
-		// 		}
+				if g.compass != nil {
+					g.compass.SetScale(hudPercent)
+				}
 
-		// 		if g.altimeter != nil {
-		// 			g.altimeter.SetScale(hudPercent)
-		// 		}
+				if g.altimeter != nil {
+					g.altimeter.SetScale(hudPercent)
+				}
 
-		// 		if g.jets != nil {
-		// 			g.jets.SetScale(hudPercent)
-		// 		}
+				if g.jets != nil {
+					g.jets.SetScale(hudPercent)
+				}
 
-		// 		if g.radar != nil {
-		// 			g.radar.SetScale(hudPercent)
-		// 		}
+				if g.radar != nil {
+					g.radar.SetScale(hudPercent)
+				}
 
-		// 		if g.armament != nil {
-		// 			g.armament.SetScale(hudPercent)
-		// 		}
+				if g.armament != nil {
+					g.armament.SetScale(hudPercent)
+				}
 
-		// 		if g.throttle != nil {
-		// 			g.throttle.SetScale(hudPercent)
-		// 		}
-		// 	} else {
-		// 		// TODO: keep only heat indicator on while powered down
-		// 		return
-		// 	}
+				if g.throttle != nil {
+					g.throttle.SetScale(hudPercent)
+				}
+			} else {
+				// TODO: keep only heat indicator on while powered down
+				return
+			}
 		default:
 			return
 		}

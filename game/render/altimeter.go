@@ -10,7 +10,6 @@ import (
 	"github.com/harbdog/pixelmek-3d/game/model"
 	"github.com/harbdog/raycaster-go/geom"
 	"github.com/tinne26/etxt"
-	"github.com/tinne26/etxt/efixed"
 )
 
 var (
@@ -49,8 +48,7 @@ func (a *Altimeter) updateFontSize(width, height int) {
 		pxSize = 1
 	}
 
-	fractSize, _ := efixed.FromFloat64(pxSize)
-	a.fontRenderer.SetSizePxFract(fractSize)
+	a.fontRenderer.SetSizePx(int(pxSize))
 }
 
 func (a *Altimeter) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions, altitude, pitch float64) {

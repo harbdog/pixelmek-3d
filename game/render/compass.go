@@ -10,7 +10,6 @@ import (
 	"github.com/harbdog/pixelmek-3d/game/model"
 	"github.com/harbdog/raycaster-go/geom"
 	"github.com/tinne26/etxt"
-	"github.com/tinne26/etxt/efixed"
 )
 
 var (
@@ -57,8 +56,7 @@ func (c *Compass) updateFontSize(width, height int) {
 		pxSize = 1
 	}
 
-	fractSize, _ := efixed.FromFloat64(pxSize)
-	c.fontRenderer.SetSizePxFract(fractSize)
+	c.fontRenderer.SetSizePx(int(pxSize))
 }
 
 func (c *Compass) SetTargetEnabled(b bool) {

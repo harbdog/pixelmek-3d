@@ -19,7 +19,8 @@ const (
 
 type Mech struct {
 	*UnitModel
-	Resource *ModelMechResource
+	Resource     *ModelMechResource
+	PowerOnTimer int
 }
 
 func NewMech(r *ModelMechResource, collisionRadius, collisionHeight float64, cockpitOffset *geom.Vector2) *Mech {
@@ -100,7 +101,36 @@ func (e *Mech) MaxStructurePoints() float64 {
 	return e.Resource.Structure
 }
 
+func (e *Mech) SetPowered(powered bool) {
+	if powered {
+		if !e.powered && e.PowerOnTimer <= 0 {
+			// initiate power on sequence
+			e.PowerOnTimer = int(TICKS_PER_SECOND * 3) // TODO: place mech power on time in constant
+		}
+	} else {
+		e.powered = powered
+	}
+}
+
 func (e *Mech) Update() bool {
+	if !e.powered {
+		// TODO: pause engine ambience when shutdown
+		// ensure certain values are reset when not powered on
+		e.jumpJetsActive = false
+		e.targetRelHeading = 0
+		e.targetVelocity = 0
+		e.targetVelocityZ = 0 // TODO: what happens if shutdown while in air from jumping?
+
+		if e.PowerOnTimer > 0 {
+			// continue power on sequence
+			e.PowerOnTimer--
+		} else {
+			// set powered on state
+			e.PowerOnTimer = 0
+			e.powered = true
+		}
+	}
+
 	if e.jumpJetsActive {
 		// consume jump jet charge
 		e.jumpJetDuration += SECONDS_PER_TICK

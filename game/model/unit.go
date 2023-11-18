@@ -16,8 +16,10 @@ type Unit interface {
 
 	Heat() float64
 	HeatDissipation() float64
-	TriggerWeapon(Weapon) bool
+	IsPowered() bool
+	SetPowered(bool)
 
+	TriggerWeapon(Weapon) bool
 	Target() Entity
 	SetTarget(Entity)
 	TargetLock() float64
@@ -80,6 +82,7 @@ type UnitModel struct {
 	heatDissipation    float64
 	heatSinks          int
 	heatSinkType       HeatSinkType
+	powered            bool
 	armament           []Weapon
 	ammunition         *Ammo
 	jumpJets           int
@@ -127,6 +130,14 @@ func (e *UnitModel) Heat() float64 {
 
 func (e *UnitModel) HeatDissipation() float64 {
 	return e.heatDissipation
+}
+
+func (e *UnitModel) IsPowered() bool {
+	return e.powered
+}
+
+func (e *UnitModel) SetPowered(powered bool) {
+	e.powered = powered
 }
 
 func (e *UnitModel) TriggerWeapon(w Weapon) bool {

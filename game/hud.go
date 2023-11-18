@@ -82,6 +82,60 @@ func (g *Game) drawHUD(screen *ebiten.Image) {
 		return
 	}
 
+	if !g.player.IsPowered() {
+		switch g.player.Unit.(type) {
+		// case *model.Mech:
+		// 	m := g.player.Unit.(*model.Mech)
+		// 	if m.PowerOnTimer > 0 {
+		// 		powerTime := model.TICKS_PER_SECOND * 3 // TODO: place mech power on time in constant
+		// 		remainTime := float64(m.PowerOnTimer)
+		// 		hudPercent := 1 - (remainTime / powerTime)
+
+		// 		// TODO: put these HUD element in a map so they can be easily looped over
+		// 		if g.playerStatus != nil {
+		// 			g.playerStatus.SetScale(hudPercent)
+		// 		}
+
+		// 		if g.targetStatus != nil {
+		// 			g.targetStatus.SetScale(hudPercent)
+		// 		}
+
+		// 		if g.navStatus != nil {
+		// 			g.navStatus.SetScale(hudPercent)
+		// 		}
+
+		// 		if g.compass != nil {
+		// 			g.compass.SetScale(hudPercent)
+		// 		}
+
+		// 		if g.altimeter != nil {
+		// 			g.altimeter.SetScale(hudPercent)
+		// 		}
+
+		// 		if g.jets != nil {
+		// 			g.jets.SetScale(hudPercent)
+		// 		}
+
+		// 		if g.radar != nil {
+		// 			g.radar.SetScale(hudPercent)
+		// 		}
+
+		// 		if g.armament != nil {
+		// 			g.armament.SetScale(hudPercent)
+		// 		}
+
+		// 		if g.throttle != nil {
+		// 			g.throttle.SetScale(hudPercent)
+		// 		}
+		// 	} else {
+		// 		// TODO: keep only heat indicator on while powered down
+		// 		return
+		// 	}
+		default:
+			return
+		}
+	}
+
 	// draw target reticle
 	g.drawTargetReticle(hudOpts)
 
@@ -152,6 +206,9 @@ func (g *Game) drawPlayerStatus(hudOpts *render.DrawHudOptions) {
 	hudW, hudH := hudRect.Dx(), hudRect.Dy()
 
 	statusScale := g.playerStatus.Scale() * g.hudScale
+	if statusScale == 0 {
+		return
+	}
 	statusWidth, statusHeight := int(statusScale*float64(hudW)/5), int(statusScale*float64(hudH)/5)
 
 	sX, sY := hudRect.Min.X+int(4*float64(hudW)/5-2*float64(statusWidth)/3), hudRect.Min.Y+hudH-statusHeight
@@ -171,6 +228,9 @@ func (g *Game) drawTargetStatus(hudOpts *render.DrawHudOptions) {
 	hudW, hudH := hudRect.Dx(), hudRect.Dy()
 
 	statusScale := g.targetStatus.Scale() * g.hudScale
+	if statusScale == 0 {
+		return
+	}
 	statusWidth, statusHeight := int(statusScale*float64(hudW)/5), int(statusScale*float64(hudH)/5)
 
 	sX, sY := hudRect.Min.X, hudRect.Min.Y+hudH-statusHeight
@@ -220,6 +280,9 @@ func (g *Game) drawNavStatus(hudOpts *render.DrawHudOptions) {
 	hudW, hudH := hudRect.Dx(), hudRect.Dy()
 
 	statusScale := g.navStatus.Scale() * g.hudScale
+	if statusScale == 0 {
+		return
+	}
 	statusWidth, statusHeight := int(statusScale*float64(hudW)/5), int(statusScale*float64(hudH)/5)
 
 	sX, sY := hudRect.Min.X, hudRect.Min.Y+hudH-statusHeight
@@ -250,6 +313,9 @@ func (g *Game) drawArmament(hudOpts *render.DrawHudOptions) {
 	hudW, hudH := hudRect.Dx(), hudRect.Dy()
 
 	armamentScale := g.armament.Scale() * g.hudScale
+	if armamentScale == 0 {
+		return
+	}
 	armamentWidth, armamentHeight := int(armamentScale*float64(hudW)/3), int(armamentScale*float64(3*hudH)/8)
 	aX, aY := hudRect.Min.X+hudW-armamentWidth+marginX, hudRect.Min.Y
 	aBounds := image.Rect(
@@ -274,6 +340,9 @@ func (g *Game) drawCompass(hudOpts *render.DrawHudOptions) {
 	hudW, hudH := hudRect.Dx(), hudRect.Dy()
 
 	compassScale := g.compass.Scale() * g.hudScale
+	if compassScale == 0 {
+		return
+	}
 	compassWidth, compassHeight := int(compassScale*float64(3*hudW)/10), int(compassScale*float64(hudH)/21)
 	cX, cY := hudRect.Min.X+int(float64(hudW)/2-float64(compassWidth)/2), hudRect.Min.Y
 	cBounds := image.Rect(
@@ -326,6 +395,9 @@ func (g *Game) drawAltimeter(hudOpts *render.DrawHudOptions) {
 	altitude := g.player.PosZ() * model.METERS_PER_UNIT
 
 	altScale := g.altimeter.Scale() * g.hudScale
+	if altScale == 0 {
+		return
+	}
 	altWidth, altHeight := int(altScale*float64(hudW)/24), int(altScale*float64(3*hudH)/12)
 	aX, aY := hudRect.Min.X, hudRect.Min.Y+int(float64(hudH)/2-float64(altHeight)/2-float64(marginY))
 	aBounds := image.Rect(
@@ -347,6 +419,9 @@ func (g *Game) drawHeatIndicator(hudOpts *render.DrawHudOptions) {
 	dissipationPerSec := g.player.HeatDissipation() * model.TICKS_PER_SECOND
 
 	heatScale := g.heat.Scale() * g.hudScale
+	if heatScale == 0 {
+		return
+	}
 	heatWidth, heatHeight := int(heatScale*float64(3*hudW)/10), int(heatScale*float64(hudH)/18)
 	hX, hY := hudRect.Min.X+int(float64(hudW)/2-float64(heatWidth)/2), hudRect.Min.Y+hudH-heatHeight
 	hBounds := image.Rect(
@@ -370,6 +445,9 @@ func (g *Game) drawThrottle(hudOpts *render.DrawHudOptions) {
 	kphMax := g.player.MaxVelocity() * model.VELOCITY_TO_KPH
 
 	throttleScale := g.throttle.Scale() * g.hudScale
+	if throttleScale == 0 {
+		return
+	}
 	throttleWidth, throttleHeight := int(throttleScale*float64(hudW)/8), int(throttleScale*float64(3*hudH)/8)
 	tX, tY := hudRect.Min.X+hudW-throttleWidth, hudRect.Min.Y+hudH-throttleHeight
 	tBounds := image.Rect(
@@ -396,6 +474,9 @@ func (g *Game) drawJumpJetIndicator(hudOpts *render.DrawHudOptions) {
 	jMaxDuration := g.player.Unit.MaxJumpJetDuration()
 
 	jetsScale := g.jets.Scale() * g.hudScale
+	if jetsScale == 0 {
+		return
+	}
 	jetsWidth, jetsHeight := int(jetsScale*float64(hudW)/12), int(jetsScale*float64(3*hudH)/18)
 	hX, hY := hudRect.Min.X+int(float64(hudW)/5+2*float64(marginX)), hudRect.Min.Y+hudH-jetsHeight
 	jBounds := image.Rect(
@@ -413,6 +494,9 @@ func (g *Game) drawRadar(hudOpts *render.DrawHudOptions) {
 	hudW, hudH := hudRect.Dx(), hudRect.Dy()
 
 	radarScale := g.radar.Scale() * g.hudScale
+	if radarScale == 0 {
+		return
+	}
 	radarWidth, radarHeight := int(radarScale*float64(hudW)/3), int(radarScale*float64(hudH)/3)
 	rX, rY := hudRect.Min.X, hudRect.Min.Y
 	radarBounds := image.Rect(
@@ -518,6 +602,9 @@ func (g *Game) drawCrosshairs(hudOpts *render.DrawHudOptions) {
 	}
 
 	cScale := g.crosshairs.Scale() * g.hudScale
+	if cScale == 0 {
+		return
+	}
 	cWidth, cHeight := cScale*float64(g.crosshairs.Width()), cScale*float64(g.crosshairs.Height())
 	cX, cY := float64(g.screenWidth)/2-cWidth/2, float64(g.screenHeight)/2-cHeight/2
 

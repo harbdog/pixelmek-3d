@@ -221,6 +221,9 @@ func (g *Game) initMission() {
 	g.player.SetPos(&geom.Vector2{X: pX, Y: pY})
 	g.player.SetHeading(geom.Radians(pDegrees))
 
+	// init player as powered off
+	g.player.SetPowered(false)
+
 	// init player armament for display
 	g.armament.SetWeapons(g.player.Armament())
 

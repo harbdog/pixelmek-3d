@@ -70,6 +70,7 @@ type SFXSource struct {
 
 	_sfxFile            string
 	_pausedWhilePlaying bool
+	_isAmbience         bool
 }
 
 func init() {
@@ -431,11 +432,12 @@ func (a *AudioHandler) StartMusicFromFile(path string) {
 // StartEngineAmbience starts the ambient engine audio loop
 func (a *AudioHandler) StartEngineAmbience() {
 	engine := a.sfx.mainSources[AUDIO_ENGINE]
+	engine._isAmbience = true
 	if engine.player != nil {
 		engine.player.Close()
 	}
 
-	// TODO: different ambient angine sound for different tonnages
+	// TODO: different ambient angine sound for different tonnages/unit types
 	stream, length, err := resources.NewAudioStreamFromFile("audio/sfx/ambience-engine.ogg")
 	if err != nil {
 		log.Error("Error loading engine ambience file:")
@@ -448,6 +450,34 @@ func (a *AudioHandler) StartEngineAmbience() {
 	vol := resound.NewVolume(engAmb)
 	engine.player = engine.channel.CreatePlayer(vol)
 	engine.player.SetBufferSize(time.Millisecond * 50)
+	engine.player.Play()
+}
+
+// StopEngineAmbience stop the ambient engine audio loop
+func (a *AudioHandler) StopEngineAmbience() {
+	engine := a.sfx.mainSources[AUDIO_ENGINE]
+	if engine._isAmbience && engine.player != nil && engine.player.IsPlaying() {
+		engine._isAmbience = false
+		engine.player.Close()
+	}
+}
+
+// IsEngineAmbience indicates whether the current engine audio is the ambience loop
+func (a *AudioHandler) IsEngineAmbience() bool {
+	engine := a.sfx.mainSources[AUDIO_ENGINE]
+	return engine._isAmbience
+}
+
+// PlayPowerOnSequence plays the power on sound using the engine audio source
+func (a *AudioHandler) PlayPowerOnSequence() {
+	engine := a.sfx.mainSources[AUDIO_ENGINE]
+	engine._isAmbience = false
+	if engine.player != nil {
+		engine.player.Close()
+	}
+
+	// TODO: different power on sounds for different tonnages/unit types
+	engine.LoadSFX(a, "audio/sfx/power-on.ogg")
 	engine.player.Play()
 }
 

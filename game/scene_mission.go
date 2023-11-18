@@ -28,7 +28,7 @@ func NewMissionScene(g *Game) *MissionScene {
 
 	// TODO: initial startup sound for all systems being in a nominal state before engine ambience
 	// start engine ambience
-	g.audio.StartEngineAmbience()
+	g.audio.PlayPowerOnSequence()
 
 	g.player.SetPowered(true)
 

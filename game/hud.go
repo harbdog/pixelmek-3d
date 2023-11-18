@@ -87,7 +87,7 @@ func (g *Game) drawHUD(screen *ebiten.Image) {
 		case *model.Mech:
 			m := g.player.Unit.(*model.Mech)
 			if m.PowerOnTimer > 0 {
-				powerTime := model.TICKS_PER_SECOND * 3 // TODO: place mech power on time in constant
+				powerTime := model.TICKS_PER_SECOND * model.MECH_POWER_ON_SECONDS
 				remainTime := float64(m.PowerOnTimer)
 				hudPercent := 1 - (remainTime / powerTime)
 
@@ -112,6 +112,11 @@ func (g *Game) drawHUD(screen *ebiten.Image) {
 					g.altimeter.SetScale(hudPercent)
 				}
 
+				if g.heat != nil {
+					// TODO: keep only heat indicator on while powered down from heat shutdown
+					g.heat.SetScale(hudPercent)
+				}
+
 				if g.jets != nil {
 					g.jets.SetScale(hudPercent)
 				}
@@ -128,7 +133,7 @@ func (g *Game) drawHUD(screen *ebiten.Image) {
 					g.throttle.SetScale(hudPercent)
 				}
 			} else {
-				// TODO: keep only heat indicator on while powered down
+				// TODO: keep only heat indicator on while powered down from heat shutdown
 				return
 			}
 		default:

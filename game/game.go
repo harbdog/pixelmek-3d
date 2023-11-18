@@ -409,6 +409,18 @@ func (g *Game) updatePlayer() {
 		g.player.moved = true
 	}
 
+	if g.player.IsPowered() {
+		// make sure engine ambience is playing
+		if !g.audio.IsEngineAmbience() {
+			g.audio.StartEngineAmbience()
+		}
+	} else {
+		// make sure engine ambience is not playing
+		if g.audio.IsEngineAmbience() {
+			g.audio.StopEngineAmbience()
+		}
+	}
+
 	if g.player.JumpJets() > 0 {
 		if g.player.JumpJetsActive() {
 			// make jet thrust sound

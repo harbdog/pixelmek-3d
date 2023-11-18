@@ -17,6 +17,10 @@ const (
 	MECH_ASSAULT
 )
 
+const (
+	MECH_POWER_ON_SECONDS float64 = 5.0
+)
+
 type Mech struct {
 	*UnitModel
 	Resource     *ModelMechResource
@@ -105,7 +109,7 @@ func (e *Mech) SetPowered(powered bool) {
 	if powered {
 		if !e.powered && e.PowerOnTimer <= 0 {
 			// initiate power on sequence
-			e.PowerOnTimer = int(TICKS_PER_SECOND * 3) // TODO: place mech power on time in constant
+			e.PowerOnTimer = int(TICKS_PER_SECOND * MECH_POWER_ON_SECONDS)
 		}
 	} else {
 		e.powered = powered

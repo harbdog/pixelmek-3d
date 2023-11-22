@@ -63,22 +63,23 @@ type Game struct {
 	width  int
 	height int
 
-	player        *Player
-	playerStatus  *render.UnitStatus
-	targetStatus  *render.UnitStatus
-	navStatus     *render.NavStatus
-	armament      *render.Armament
-	compass       *render.Compass
-	altimeter     *render.Altimeter
-	heat          *render.HeatIndicator
-	radar         *render.Radar
-	throttle      *render.Throttle
-	jets          *render.JumpJetIndicator
-	crosshairs    *render.Crosshairs
-	targetReticle *render.TargetReticle
-	navReticle    *render.NavReticle
-	fps           *render.FPSIndicator
-	fonts         *render.FontHandler
+	player    *Player
+	playerHUD map[HUDElementType]HUDElement
+	// playerStatus  *render.UnitStatus
+	// targetStatus  *render.UnitStatus
+	// navStatus     *render.NavStatus
+	// armament      *render.Armament
+	// compass       *render.Compass
+	// altimeter     *render.Altimeter
+	// heat          *render.HeatIndicator
+	// radar         *render.Radar
+	// throttle      *render.Throttle
+	// jets          *render.JumpJetIndicator
+	// crosshairs    *render.Crosshairs
+	// targetReticle *render.TargetReticle
+	// navReticle    *render.NavReticle
+	// fps           *render.FPSIndicator
+	fonts *render.FontHandler
 
 	hudEnabled        bool
 	hudScale          float64
@@ -225,7 +226,9 @@ func (g *Game) initMission() {
 	g.player.SetPowered(false)
 
 	// init player armament for display
-	g.armament.SetWeapons(g.player.Armament())
+	if armament := g.GetHUDElement(HUD_ARMAMENT); armament != nil {
+		armament.(*render.Armament).SetWeapons(g.player.Armament())
+	}
 
 	// initial mouse position to establish delta
 	g.mouseX, g.mouseY = math.MinInt32, math.MinInt32

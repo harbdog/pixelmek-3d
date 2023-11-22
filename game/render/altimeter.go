@@ -51,7 +51,13 @@ func (a *Altimeter) updateFontSize(width, height int) {
 	a.fontRenderer.SetSizePx(int(pxSize))
 }
 
-func (a *Altimeter) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions, altitude, pitch float64) {
+func (a *Altimeter) SetOrientation(altitude, pitch float64) {
+
+}
+
+//func (a *Altimeter) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions, altitude, pitch float64) {
+
+func (a *Altimeter) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions) {
 	screen := hudOpts.Screen
 	a.fontRenderer.SetTarget(screen)
 

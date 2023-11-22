@@ -78,7 +78,7 @@ func (r *Radar) SetRadarBlips(blips []*RadarBlip) {
 	r.radarBlips = blips
 }
 
-func (r *Radar) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions, position *geom.Vector2, heading, turretAngle, fovDegrees float64) {
+func (r *Radar) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions) {
 	screen := hudOpts.Screen
 	r.fontRenderer.SetTarget(screen)
 

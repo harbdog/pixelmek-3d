@@ -11,6 +11,41 @@ import (
 	"github.com/harbdog/raycaster-go/geom"
 )
 
+type HUDElementType int
+
+const (
+	HUD_FPS HUDElementType = iota
+	HUD_ALTIMETER
+	HUD_ARMAMENT
+	HUD_COMPASS
+	HUD_CROSSHAIRS
+	HUD_HEAT
+	HUD_JETS
+	HUD_NAV_RETICLE
+	HUD_NAV_STATUS
+	HUD_PLAYER_STATUS
+	HUD_RADAR
+	HUD_TARGET_RETICLE
+	HUD_TARGET_STATUS
+	HUD_THROTTLE
+	TOTAL_HUD_ELEMENT_TYPES
+)
+
+type HUDElement interface {
+	Draw(bounds image.Rectangle, hudOpts *render.DrawHudOptions)
+	Width() int
+	Height() int
+	Scale() float64
+	SetScale(float64)
+}
+
+func (g *Game) GetHUDElement(t HUDElementType) HUDElement {
+	if h, ok := g.playerHUD[t]; ok {
+		return h
+	}
+	return nil
+}
+
 func (g *Game) initInteractiveTypes() {
 	g.interactiveSpriteTypes = map[SpriteType]struct{}{
 		MechSpriteType:        {},
@@ -30,35 +65,51 @@ func (g *Game) isInteractiveType(spriteType SpriteType) bool {
 
 // loadHUD loads HUD elements
 func (g *Game) loadHUD() {
+	g.playerHUD = make(map[HUDElementType]HUDElement)
 
-	g.compass = render.NewCompass(g.fonts.HUDFont)
+	compass := render.NewCompass(g.fonts.HUDFont)
+	g.playerHUD[HUD_COMPASS] = compass
 
-	g.altimeter = render.NewAltimeter(g.fonts.HUDFont)
+	altimeter := render.NewAltimeter(g.fonts.HUDFont)
+	g.playerHUD[HUD_ALTIMETER] = altimeter
 
-	g.heat = render.NewHeatIndicator(g.fonts.HUDFont)
-	g.jets = render.NewJumpJetIndicator(g.fonts.HUDFont)
+	heat := render.NewHeatIndicator(g.fonts.HUDFont)
+	g.playerHUD[HUD_HEAT] = heat
 
-	g.radar = render.NewRadar(g.fonts.HUDFont)
-	g.radar.SetMapLines(g.collisionMap)
+	jets := render.NewJumpJetIndicator(g.fonts.HUDFont)
+	g.playerHUD[HUD_JETS] = jets
 
-	g.armament = render.NewArmament(g.fonts.HUDFont)
+	radar := render.NewRadar(g.fonts.HUDFont)
+	radar.SetMapLines(g.collisionMap)
+	g.playerHUD[HUD_RADAR] = radar
 
-	g.throttle = render.NewThrottle(g.fonts.HUDFont)
+	armament := render.NewArmament(g.fonts.HUDFont)
+	g.playerHUD[HUD_ARMAMENT] = armament
 
-	g.playerStatus = render.NewUnitStatus(true, g.fonts.HUDFont)
-	g.targetStatus = render.NewUnitStatus(false, g.fonts.HUDFont)
-	g.navStatus = render.NewNavStatus(g.fonts.HUDFont)
+	throttle := render.NewThrottle(g.fonts.HUDFont)
+	g.playerHUD[HUD_THROTTLE] = throttle
+
+	playerStatus := render.NewUnitStatus(true, g.fonts.HUDFont)
+	g.playerHUD[HUD_PLAYER_STATUS] = playerStatus
+	targetStatus := render.NewUnitStatus(false, g.fonts.HUDFont)
+	g.playerHUD[HUD_TARGET_STATUS] = targetStatus
+	navStatus := render.NewNavStatus(g.fonts.HUDFont)
+	g.playerHUD[HUD_NAV_STATUS] = navStatus
 
 	crosshairsSheet := getSpriteFromFile("hud/crosshairs_sheet.png")
-	g.crosshairs = render.NewCrosshairs(crosshairsSheet, 1.0, 20, 10, 190)
+	crosshairs := render.NewCrosshairs(crosshairsSheet, 1.0, 20, 10, 190)
+	g.playerHUD[HUD_CROSSHAIRS] = crosshairs
 
 	tgtReticleSheet := getSpriteFromFile("hud/target_reticle.png")
-	g.targetReticle = render.NewTargetReticle(1.0, tgtReticleSheet)
+	targetReticle := render.NewTargetReticle(1.0, tgtReticleSheet)
+	g.playerHUD[HUD_TARGET_RETICLE] = targetReticle
 
 	navReticleSheet := getSpriteFromFile("hud/nav_reticle.png")
-	g.navReticle = render.NewNavReticle(1.0, navReticleSheet)
+	navReticle := render.NewNavReticle(1.0, navReticleSheet)
+	g.playerHUD[HUD_NAV_RETICLE] = navReticle
 
-	g.fps = render.NewFPSIndicator(g.fonts.HUDFont)
+	fps := render.NewFPSIndicator(g.fonts.HUDFont)
+	g.playerHUD[HUD_FPS] = fps
 }
 
 // drawHUD draws HUD elements on the screen
@@ -91,46 +142,9 @@ func (g *Game) drawHUD(screen *ebiten.Image) {
 				remainTime := float64(m.PowerOnTimer)
 				hudPercent := 1 - (remainTime / powerTime)
 
-				// TODO: put these HUD element in a map so they can be easily looped over
-				if g.playerStatus != nil {
-					g.playerStatus.SetScale(hudPercent)
-				}
-
-				if g.targetStatus != nil {
-					g.targetStatus.SetScale(hudPercent)
-				}
-
-				if g.navStatus != nil {
-					g.navStatus.SetScale(hudPercent)
-				}
-
-				if g.compass != nil {
-					g.compass.SetScale(hudPercent)
-				}
-
-				if g.altimeter != nil {
-					g.altimeter.SetScale(hudPercent)
-				}
-
-				if g.heat != nil {
+				for _, hudElement := range g.playerHUD {
 					// TODO: keep only heat indicator on while powered down from heat shutdown
-					g.heat.SetScale(hudPercent)
-				}
-
-				if g.jets != nil {
-					g.jets.SetScale(hudPercent)
-				}
-
-				if g.radar != nil {
-					g.radar.SetScale(hudPercent)
-				}
-
-				if g.armament != nil {
-					g.armament.SetScale(hudPercent)
-				}
-
-				if g.throttle != nil {
-					g.throttle.SetScale(hudPercent)
+					hudElement.SetScale(hudPercent)
 				}
 			} else {
 				// TODO: keep only heat indicator on while powered down from heat shutdown
@@ -182,35 +196,37 @@ func (g *Game) drawHUD(screen *ebiten.Image) {
 }
 
 func (g *Game) drawFPS(hudOpts *render.DrawHudOptions) {
-	if g.fps == nil || !g.fpsEnabled {
+	fps := g.GetHUDElement(HUD_FPS).(*render.FPSIndicator)
+	if fps == nil || !g.fpsEnabled {
 		return
 	}
 
-	fps := fmt.Sprintf("FPS: %0.1f | TPS: %0.1f/%d", ebiten.ActualFPS(), ebiten.ActualTPS(), ebiten.TPS())
-	g.fps.SetFPSText(fps)
+	fpsText := fmt.Sprintf("FPS: %0.1f | TPS: %0.1f/%d", ebiten.ActualFPS(), ebiten.ActualTPS(), ebiten.TPS())
+	fps.SetFPSText(fpsText)
 
 	marginY := hudOpts.MarginY
 	hudRect := hudOpts.HudRect
 
-	fScale := g.fps.Scale() * g.hudScale
+	fScale := fps.Scale() * g.hudScale
 	fWidth, fHeight := int(fScale*float64(hudRect.Dx())/5), int(fScale*float64(marginY))
 
 	fX, fY := 0, 0
 	fBounds := image.Rect(
 		fX, fY, fX+fWidth, fY+fHeight,
 	)
-	g.fps.Draw(fBounds, hudOpts)
+	fps.Draw(fBounds, hudOpts)
 }
 
 func (g *Game) drawPlayerStatus(hudOpts *render.DrawHudOptions) {
-	if g.playerStatus == nil {
+	playerStatus := g.GetHUDElement(HUD_PLAYER_STATUS).(*render.UnitStatus)
+	if playerStatus == nil {
 		return
 	}
 
 	hudRect := hudOpts.HudRect
 	hudW, hudH := hudRect.Dx(), hudRect.Dy()
 
-	statusScale := g.playerStatus.Scale() * g.hudScale
+	statusScale := playerStatus.Scale() * g.hudScale
 	if statusScale == 0 {
 		return
 	}
@@ -220,19 +236,20 @@ func (g *Game) drawPlayerStatus(hudOpts *render.DrawHudOptions) {
 	sBounds := image.Rect(
 		sX, sY, sX+statusWidth, sY+statusHeight,
 	)
-	g.playerStatus.SetUnit(g.player.sprite)
-	g.playerStatus.Draw(sBounds, hudOpts)
+	playerStatus.SetUnit(g.player.sprite)
+	playerStatus.Draw(sBounds, hudOpts)
 }
 
 func (g *Game) drawTargetStatus(hudOpts *render.DrawHudOptions) {
-	if g.targetStatus == nil || g.player.Target() == nil {
+	targetStatus := g.GetHUDElement(HUD_TARGET_STATUS).(*render.UnitStatus)
+	if targetStatus == nil || g.player.Target() == nil {
 		return
 	}
 
 	hudRect := hudOpts.HudRect
 	hudW, hudH := hudRect.Dx(), hudRect.Dy()
 
-	statusScale := g.targetStatus.Scale() * g.hudScale
+	statusScale := targetStatus.Scale() * g.hudScale
 	if statusScale == 0 {
 		return
 	}
@@ -244,7 +261,7 @@ func (g *Game) drawTargetStatus(hudOpts *render.DrawHudOptions) {
 	)
 
 	targetEntity := g.player.Target()
-	targetUnit := g.targetStatus.Unit()
+	targetUnit := targetStatus.Unit()
 	if targetUnit == nil || targetUnit.Entity != targetEntity {
 		targetUnit = g.getSpriteFromEntity(targetEntity)
 	}
@@ -253,7 +270,7 @@ func (g *Game) drawTargetStatus(hudOpts *render.DrawHudOptions) {
 		targetDistance := model.EntityDistance(g.player, targetUnit.Entity) - targetUnit.CollisionRadius() - g.player.CollisionRadius()
 		distanceMeters := targetDistance * model.METERS_PER_UNIT
 
-		g.targetStatus.SetUnitDistance(distanceMeters)
+		targetStatus.SetUnitDistance(distanceMeters)
 
 		// determine if lock percent should show
 		hasLockOns := false
@@ -264,27 +281,30 @@ func (g *Game) drawTargetStatus(hudOpts *render.DrawHudOptions) {
 				break
 			}
 		}
-		g.targetStatus.ShowTargetLock(hasLockOns)
-		g.targetStatus.SetTargetLock(g.player.TargetLock())
+		targetStatus.ShowTargetLock(hasLockOns)
+		targetStatus.SetTargetLock(g.player.TargetLock())
 	} else {
-		g.targetStatus.ShowTargetLock(false)
-		g.targetStatus.SetTargetLock(0)
+		targetStatus.ShowTargetLock(false)
+		targetStatus.SetTargetLock(0)
 	}
 
-	g.targetStatus.SetTargetReticle(g.targetReticle)
-	g.targetStatus.SetUnit(targetUnit)
-	g.targetStatus.Draw(sBounds, hudOpts)
+	targetReticle := g.GetHUDElement(HUD_TARGET_RETICLE).(*render.TargetReticle)
+
+	targetStatus.SetTargetReticle(targetReticle)
+	targetStatus.SetUnit(targetUnit)
+	targetStatus.Draw(sBounds, hudOpts)
 }
 
 func (g *Game) drawNavStatus(hudOpts *render.DrawHudOptions) {
-	if g.navStatus == nil || g.player.navPoint == nil || g.player.Target() != nil {
+	navStatus := g.GetHUDElement(HUD_NAV_STATUS).(*render.NavStatus)
+	if navStatus == nil || g.player.navPoint == nil || g.player.Target() != nil {
 		return
 	}
 
 	hudRect := hudOpts.HudRect
 	hudW, hudH := hudRect.Dx(), hudRect.Dy()
 
-	statusScale := g.navStatus.Scale() * g.hudScale
+	statusScale := navStatus.Scale() * g.hudScale
 	if statusScale == 0 {
 		return
 	}
@@ -303,13 +323,14 @@ func (g *Game) drawNavStatus(hudOpts *render.DrawHudOptions) {
 	}
 	navDistance := navLine.Distance() * model.METERS_PER_UNIT
 
-	g.navStatus.SetNavDistance(navDistance)
-	g.navStatus.SetNavPoint(navPoint)
-	g.navStatus.Draw(sBounds, hudOpts)
+	navStatus.SetNavDistance(navDistance)
+	navStatus.SetNavPoint(navPoint)
+	navStatus.Draw(sBounds, hudOpts)
 }
 
 func (g *Game) drawArmament(hudOpts *render.DrawHudOptions) {
-	if g.armament == nil {
+	armament := g.GetHUDElement(HUD_ARMAMENT).(*render.Armament)
+	if armament == nil {
 		return
 	}
 
@@ -317,7 +338,7 @@ func (g *Game) drawArmament(hudOpts *render.DrawHudOptions) {
 	hudRect := hudOpts.HudRect
 	hudW, hudH := hudRect.Dx(), hudRect.Dy()
 
-	armamentScale := g.armament.Scale() * g.hudScale
+	armamentScale := armament.Scale() * g.hudScale
 	if armamentScale == 0 {
 		return
 	}
@@ -331,20 +352,21 @@ func (g *Game) drawArmament(hudOpts *render.DrawHudOptions) {
 	if g.player.fireMode == model.GROUP_FIRE {
 		weaponOrGroupIndex = g.player.selectedGroup
 	}
-	g.armament.SetWeaponGroups(g.player.weaponGroups)
-	g.armament.SetSelectedWeapon(weaponOrGroupIndex, g.player.fireMode)
-	g.armament.Draw(aBounds, hudOpts)
+	armament.SetWeaponGroups(g.player.weaponGroups)
+	armament.SetSelectedWeapon(weaponOrGroupIndex, g.player.fireMode)
+	armament.Draw(aBounds, hudOpts)
 }
 
 func (g *Game) drawCompass(hudOpts *render.DrawHudOptions) {
-	if g.compass == nil {
+	compass := g.GetHUDElement(HUD_COMPASS).(*render.Compass)
+	if compass == nil {
 		return
 	}
 
 	hudRect := hudOpts.HudRect
 	hudW, hudH := hudRect.Dx(), hudRect.Dy()
 
-	compassScale := g.compass.Scale() * g.hudScale
+	compassScale := compass.Scale() * g.hudScale
 	if compassScale == 0 {
 		return
 	}
@@ -357,7 +379,7 @@ func (g *Game) drawCompass(hudOpts *render.DrawHudOptions) {
 	playerPos := g.player.Pos()
 
 	if g.player.Target() == nil {
-		g.compass.SetTargetEnabled(false)
+		compass.SetTargetEnabled(false)
 	} else {
 		targetPos := g.player.Target().Pos()
 		tLine := geom.Line{
@@ -366,12 +388,12 @@ func (g *Game) drawCompass(hudOpts *render.DrawHudOptions) {
 		}
 		tAngle := tLine.Angle()
 
-		g.compass.SetTargetEnabled(true)
-		g.compass.SetTargetHeading(tAngle)
+		compass.SetTargetEnabled(true)
+		compass.SetTargetHeading(tAngle)
 	}
 
 	if g.player.navPoint == nil {
-		g.compass.SetNavEnabled(false)
+		compass.SetNavEnabled(false)
 	} else {
 		navPos := g.player.navPoint.Pos()
 		tLine := geom.Line{
@@ -380,15 +402,17 @@ func (g *Game) drawCompass(hudOpts *render.DrawHudOptions) {
 		}
 		nAngle := tLine.Angle()
 
-		g.compass.SetNavEnabled(true)
-		g.compass.SetNavHeading(nAngle)
+		compass.SetNavEnabled(true)
+		compass.SetNavHeading(nAngle)
 	}
 
-	g.compass.Draw(cBounds, hudOpts, g.player.Heading(), g.player.TurretAngle())
+	compass.SetOrientation(g.player.Heading(), g.player.TurretAngle())
+	compass.Draw(cBounds, hudOpts)
 }
 
 func (g *Game) drawAltimeter(hudOpts *render.DrawHudOptions) {
-	if g.altimeter == nil {
+	altimeter := g.GetHUDElement(HUD_ALTIMETER).(*render.Altimeter)
+	if altimeter == nil {
 		return
 	}
 
@@ -399,7 +423,7 @@ func (g *Game) drawAltimeter(hudOpts *render.DrawHudOptions) {
 	// convert Z position to meters of altitude
 	altitude := g.player.PosZ() * model.METERS_PER_UNIT
 
-	altScale := g.altimeter.Scale() * g.hudScale
+	altScale := altimeter.Scale() * g.hudScale
 	if altScale == 0 {
 		return
 	}
@@ -408,11 +432,12 @@ func (g *Game) drawAltimeter(hudOpts *render.DrawHudOptions) {
 	aBounds := image.Rect(
 		aX, aY, aX+altWidth, aY+altHeight,
 	)
-	g.altimeter.Draw(aBounds, hudOpts, altitude, g.player.Pitch())
+	altimeter.Draw(aBounds, hudOpts, altitude, g.player.Pitch())
 }
 
 func (g *Game) drawHeatIndicator(hudOpts *render.DrawHudOptions) {
-	if g.heat == nil {
+	heat := g.GetHUDElement(HUD_HEAT).(*render.HeatIndicator)
+	if heat == nil {
 		return
 	}
 
@@ -420,10 +445,10 @@ func (g *Game) drawHeatIndicator(hudOpts *render.DrawHudOptions) {
 	hudW, hudH := hudRect.Dx(), hudRect.Dy()
 
 	// convert heat dissipation to seconds
-	heat, maxHeat := g.player.Heat(), 100.0 // FIXME: add MaxHeat to model, determined based on # of heat sinks
+	currHeat, maxHeat := g.player.Heat(), 100.0 // FIXME: add MaxHeat to model, determined based on # of heat sinks
 	dissipationPerSec := g.player.HeatDissipation() * model.TICKS_PER_SECOND
 
-	heatScale := g.heat.Scale() * g.hudScale
+	heatScale := heat.Scale() * g.hudScale
 	if heatScale == 0 {
 		return
 	}
@@ -432,11 +457,12 @@ func (g *Game) drawHeatIndicator(hudOpts *render.DrawHudOptions) {
 	hBounds := image.Rect(
 		hX, hY, hX+heatWidth, hY+heatHeight,
 	)
-	g.heat.Draw(hBounds, hudOpts, heat, maxHeat, dissipationPerSec)
+	heat.Draw(hBounds, hudOpts, currHeat, maxHeat, dissipationPerSec)
 }
 
 func (g *Game) drawThrottle(hudOpts *render.DrawHudOptions) {
-	if g.throttle == nil {
+	throttle := g.GetHUDElement(HUD_THROTTLE).(*render.Throttle)
+	if throttle == nil {
 		return
 	}
 
@@ -449,7 +475,7 @@ func (g *Game) drawThrottle(hudOpts *render.DrawHudOptions) {
 	kphTgtVelocity := g.player.TargetVelocity() * model.VELOCITY_TO_KPH
 	kphMax := g.player.MaxVelocity() * model.VELOCITY_TO_KPH
 
-	throttleScale := g.throttle.Scale() * g.hudScale
+	throttleScale := throttle.Scale() * g.hudScale
 	if throttleScale == 0 {
 		return
 	}
@@ -459,11 +485,12 @@ func (g *Game) drawThrottle(hudOpts *render.DrawHudOptions) {
 		tX, tY,
 		tX+throttleWidth, tY+throttleHeight,
 	)
-	g.throttle.Draw(tBounds, hudOpts, kphVelocity, kphTgtVelocity, kphVelocityZ, kphMax, kphMax/2)
+	throttle.Draw(tBounds, hudOpts, kphVelocity, kphTgtVelocity, kphVelocityZ, kphMax, kphMax/2)
 }
 
 func (g *Game) drawJumpJetIndicator(hudOpts *render.DrawHudOptions) {
-	if g.jets == nil {
+	jets := g.GetHUDElement(HUD_JETS).(*render.JumpJetIndicator)
+	if jets == nil {
 		return
 	}
 
@@ -478,7 +505,7 @@ func (g *Game) drawJumpJetIndicator(hudOpts *render.DrawHudOptions) {
 	jDuration := g.player.Unit.JumpJetDuration()
 	jMaxDuration := g.player.Unit.MaxJumpJetDuration()
 
-	jetsScale := g.jets.Scale() * g.hudScale
+	jetsScale := jets.Scale() * g.hudScale
 	if jetsScale == 0 {
 		return
 	}
@@ -487,18 +514,19 @@ func (g *Game) drawJumpJetIndicator(hudOpts *render.DrawHudOptions) {
 	jBounds := image.Rect(
 		hX, hY, hX+jetsWidth, hY+jetsHeight,
 	)
-	g.jets.Draw(jBounds, hudOpts, jDuration, jMaxDuration)
+	jets.Draw(jBounds, hudOpts, jDuration, jMaxDuration)
 }
 
 func (g *Game) drawRadar(hudOpts *render.DrawHudOptions) {
-	if g.radar == nil {
+	radar := g.GetHUDElement(HUD_RADAR).(*render.Radar)
+	if radar == nil {
 		return
 	}
 
 	hudRect := hudOpts.HudRect
 	hudW, hudH := hudRect.Dx(), hudRect.Dy()
 
-	radarScale := g.radar.Scale() * g.hudScale
+	radarScale := radar.Scale() * g.hudScale
 	if radarScale == 0 {
 		return
 	}
@@ -594,34 +622,36 @@ func (g *Game) drawRadar(hudOpts *render.DrawHudOptions) {
 		})
 	}
 
-	g.radar.SetNavPoints(rNavPoints[:navCount])
-	g.radar.SetRadarBlips(radarBlips[:blipCount])
+	radar.SetNavPoints(rNavPoints[:navCount])
+	radar.SetRadarBlips(radarBlips[:blipCount])
 
 	cameraViewDegrees := g.fovDegrees / g.camera.FovDepth()
-	g.radar.Draw(radarBounds, hudOpts, g.player.Pos(), g.player.Heading(), g.player.TurretAngle(), cameraViewDegrees)
+	radar.Draw(radarBounds, hudOpts, g.player.Pos(), g.player.Heading(), g.player.TurretAngle(), cameraViewDegrees)
 }
 
 func (g *Game) drawCrosshairs(hudOpts *render.DrawHudOptions) {
-	if g.crosshairs == nil {
+	crosshairs := g.GetHUDElement(HUD_CROSSHAIRS).(*render.Crosshairs)
+	if crosshairs == nil {
 		return
 	}
 
-	cScale := g.crosshairs.Scale() * g.hudScale
+	cScale := crosshairs.Scale() * g.hudScale
 	if cScale == 0 {
 		return
 	}
-	cWidth, cHeight := cScale*float64(g.crosshairs.Width()), cScale*float64(g.crosshairs.Height())
+	cWidth, cHeight := cScale*float64(crosshairs.Width()), cScale*float64(crosshairs.Height())
 	cX, cY := float64(g.screenWidth)/2-cWidth/2, float64(g.screenHeight)/2-cHeight/2
 
 	crosshairBounds := image.Rect(
 		int(cX), int(cY), int(cX+cWidth), int(cY+cHeight),
 	)
 
-	g.crosshairs.Draw(crosshairBounds, hudOpts)
+	crosshairs.Draw(crosshairBounds, hudOpts)
 }
 
 func (g *Game) drawTargetReticle(hudOpts *render.DrawHudOptions) {
-	if g.targetReticle == nil || g.player.Target() == nil {
+	targetReticle := g.GetHUDElement(HUD_TARGET_RETICLE).(*render.TargetReticle)
+	if targetReticle == nil || g.player.Target() == nil {
 		return
 	}
 
@@ -635,11 +665,12 @@ func (g *Game) drawTargetReticle(hudOpts *render.DrawHudOptions) {
 		return
 	}
 
-	g.targetReticle.Draw(*targetBounds, hudOpts)
+	targetReticle.Draw(*targetBounds, hudOpts)
 }
 
 func (g *Game) drawNavReticle(hudOpts *render.DrawHudOptions) {
-	if g.navReticle == nil || g.player.Target() != nil || g.player.navPoint == nil {
+	navReticle := g.GetHUDElement(HUD_NAV_RETICLE).(*render.NavReticle)
+	if navReticle == nil || g.player.Target() != nil || g.player.navPoint == nil {
 		return
 	}
 
@@ -653,5 +684,5 @@ func (g *Game) drawNavReticle(hudOpts *render.DrawHudOptions) {
 		return
 	}
 
-	g.navReticle.Draw(*navBounds, hudOpts)
+	navReticle.Draw(*navBounds, hudOpts)
 }

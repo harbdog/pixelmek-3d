@@ -44,7 +44,7 @@ func (j *JumpJetIndicator) updateFontSize(width, height int) {
 	j.fontRenderer.SetSizePx(int(pxSize))
 }
 
-func (j *JumpJetIndicator) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions, jumpJetDuration, maxJumpJetDuration float64) {
+func (j *JumpJetIndicator) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions) {
 	screen := hudOpts.Screen
 	j.fontRenderer.SetTarget(screen)
 

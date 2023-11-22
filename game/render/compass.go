@@ -23,6 +23,8 @@ type Compass struct {
 	fontRenderer    *etxt.Renderer
 	targetIndicator *compassIndicator
 	navIndicator    *compassIndicator
+	heading         float64
+	turretAngle     float64
 }
 
 type compassIndicator struct {
@@ -81,7 +83,12 @@ func (c *Compass) SetNavHeading(heading float64) {
 	c.navIndicator.heading = heading
 }
 
-func (c *Compass) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions, heading, turretAngle float64) {
+func (c *Compass) SetOrientation(heading, turretAngle float64) {
+	c.heading = heading
+	c.turretAngle = turretAngle
+}
+
+func (c *Compass) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions) {
 	screen := hudOpts.Screen
 	c.fontRenderer.SetTarget(screen)
 
@@ -89,8 +96,8 @@ func (c *Compass) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions, heading,
 	c.updateFontSize(bW, bH)
 
 	// turret angle appears opposite because it is relative to body heading which counts up counter clockwise
-	compassTurretAngle := -turretAngle
-	headingDeg := geom.Degrees(heading)
+	compassTurretAngle := -c.turretAngle
+	headingDeg := geom.Degrees(c.heading)
 	relTurretDeg := geom.Degrees(compassTurretAngle)
 
 	midX, topY := float32(bX)+float32(bW)/2, float32(bY)

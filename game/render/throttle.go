@@ -47,7 +47,7 @@ func (t *Throttle) updateFontSize(width, height int) {
 	t.fontRenderer.SetSizePx(int(pxSize))
 }
 
-func (t *Throttle) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions, velocity, targetVelocity, velocityZ, maxVelocity, maxReverse float64) {
+func (t *Throttle) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions) {
 	screen := hudOpts.Screen
 	t.fontRenderer.SetTarget(screen)
 

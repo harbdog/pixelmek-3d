@@ -48,7 +48,7 @@ func (h *HeatIndicator) updateFontSize(width, height int) {
 	h.fontRenderer.SetSizePx(int(pxSize))
 }
 
-func (h *HeatIndicator) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions, heat, maxHeat, dissipation float64) {
+func (h *HeatIndicator) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions) {
 	screen := hudOpts.Screen
 	h.fontRenderer.SetTarget(screen)
 

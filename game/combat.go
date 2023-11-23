@@ -28,6 +28,10 @@ func (g *Game) initCombatVariables() {
 func (g *Game) firePlayerWeapon(weaponGroupFire int) bool {
 	// weapons test from model
 	weaponsFired := false
+	if !g.player.IsPowered() {
+		// TODO: when shutdown, show weapons as disabled and disallow cycling weapons
+		return weaponsFired
+	}
 	armament := g.player.Armament()
 	if len(armament) == 0 {
 		return weaponsFired

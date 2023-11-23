@@ -16,7 +16,9 @@ var (
 
 type JumpJetIndicator struct {
 	HUDSprite
-	fontRenderer *etxt.Renderer
+	fontRenderer       *etxt.Renderer
+	jumpJetDuration    float64
+	maxJumpJetDuration float64
 }
 
 // NewJumpJetIndicator creates a jump jet indicator image to be rendered on demand
@@ -44,6 +46,11 @@ func (j *JumpJetIndicator) updateFontSize(width, height int) {
 	j.fontRenderer.SetSizePx(int(pxSize))
 }
 
+func (j *JumpJetIndicator) SetValues(jumpJetDuration, maxJumpJetDuration float64) {
+	j.jumpJetDuration = jumpJetDuration
+	j.maxJumpJetDuration = maxJumpJetDuration
+}
+
 func (j *JumpJetIndicator) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions) {
 	screen := hudOpts.Screen
 	j.fontRenderer.SetTarget(screen)
@@ -55,7 +62,7 @@ func (j *JumpJetIndicator) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions)
 	jW, jH := float32(bW)/4, 7*float32(bH)/8
 
 	// current jet level box
-	jetRatio := jumpJetDuration / maxJumpJetDuration
+	jetRatio := j.jumpJetDuration / j.maxJumpJetDuration
 	if jetRatio > 1 {
 		jetRatio = 1
 	}

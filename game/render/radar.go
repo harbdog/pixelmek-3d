@@ -23,6 +23,10 @@ type Radar struct {
 	mapLines     []*geom.Line
 	radarBlips   []*RadarBlip
 	navPoints    []*RadarNavPoint
+	position     *geom.Vector2
+	heading      float64
+	turretAngle  float64
+	fovDegrees   float64
 }
 
 type RadarBlip struct {
@@ -78,6 +82,13 @@ func (r *Radar) SetRadarBlips(blips []*RadarBlip) {
 	r.radarBlips = blips
 }
 
+func (r *Radar) SetValues(position *geom.Vector2, heading, turretAngle, fovDegrees float64) {
+	r.position = position
+	r.heading = heading
+	r.turretAngle = turretAngle
+	r.fovDegrees = fovDegrees
+}
+
 func (r *Radar) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions) {
 	screen := hudOpts.Screen
 	r.fontRenderer.SetTarget(screen)
@@ -87,7 +98,7 @@ func (r *Radar) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions) {
 
 	// turret angle appears opposite because it is relative to body heading which counts up counter clockwise
 	// and offset by -90 degrees to make 0 degree turret angle as relative from the forward (up) position
-	radarTurretAngle := -turretAngle - geom.HalfPi
+	radarTurretAngle := -r.turretAngle - geom.HalfPi
 
 	midX, midY := float64(bW)/2, float64(bH)/2
 	radius := midX - 1
@@ -114,7 +125,7 @@ func (r *Radar) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions) {
 	vector.StrokeCircle(screen, float32(midX), float32(midY), float32(radius), oT, color.NRGBA{oColor.R, oColor.G, oColor.B, oAlpha}, false)
 
 	// Draw any walls/boundaries within the radar range using lines that make up the map wall boundaries
-	posX, posY := position.X, position.Y
+	posX, posY := r.position.X, r.position.Y
 	radarRange := radarRangeMeters / model.METERS_PER_UNIT
 	radarHudSizeFactor := radius / radarRange
 	for _, borderLine := range r.mapLines {
@@ -128,11 +139,11 @@ func (r *Radar) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions) {
 
 		// determine distance to wall line, convert to relative radar angle and draw
 		line1 := geom.Line{X1: posX, Y1: posY, X2: borderLine.X1, Y2: borderLine.Y1}
-		angle1 := heading - line1.Angle() - geom.HalfPi
+		angle1 := r.heading - line1.Angle() - geom.HalfPi
 		dist1 := line1.Distance()
 
 		line2 := geom.Line{X1: posX, Y1: posY, X2: borderLine.X2, Y2: borderLine.Y2}
-		angle2 := heading - line2.Angle() - geom.HalfPi
+		angle2 := r.heading - line2.Angle() - geom.HalfPi
 		dist2 := line2.Distance()
 
 		if dist1 > radarRange || dist2 > radarRange {
@@ -146,7 +157,7 @@ func (r *Radar) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions) {
 	}
 
 	// Draw turret angle reference lines
-	fovAngle := geom.Radians(fovDegrees)
+	fovAngle := geom.Radians(r.fovDegrees)
 	turretL := geom.LineFromAngle(midX, midY, radarTurretAngle-fovAngle/2, radius)
 	turretR := geom.LineFromAngle(midX, midY, radarTurretAngle+fovAngle/2, radius)
 	vector.StrokeLine(screen, float32(turretL.X1), float32(turretL.Y1), float32(turretL.X2), float32(turretL.Y2), oT, oColor, false)

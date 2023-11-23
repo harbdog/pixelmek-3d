@@ -83,7 +83,7 @@ func (c *Compass) SetNavHeading(heading float64) {
 	c.navIndicator.heading = heading
 }
 
-func (c *Compass) SetOrientation(heading, turretAngle float64) {
+func (c *Compass) SetValues(heading, turretAngle float64) {
 	c.heading = heading
 	c.turretAngle = turretAngle
 }

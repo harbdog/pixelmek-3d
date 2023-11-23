@@ -22,6 +22,8 @@ var (
 type Altimeter struct {
 	HUDSprite
 	fontRenderer *etxt.Renderer
+	altitude     float64
+	pitch        float64
 }
 
 // NewAltimeter creates a compass image to be rendered on demand
@@ -51,11 +53,10 @@ func (a *Altimeter) updateFontSize(width, height int) {
 	a.fontRenderer.SetSizePx(int(pxSize))
 }
 
-func (a *Altimeter) SetOrientation(altitude, pitch float64) {
-
+func (a *Altimeter) SetValues(altitude, pitch float64) {
+	a.altitude = altitude
+	a.pitch = pitch
 }
-
-//func (a *Altimeter) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions, altitude, pitch float64) {
 
 func (a *Altimeter) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions) {
 	screen := hudOpts.Screen
@@ -65,7 +66,7 @@ func (a *Altimeter) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions) {
 	a.updateFontSize(bW, bH)
 
 	// use opposite pitch value so indicator will draw upward from center when postive angle
-	relPitchAngle := -pitch
+	relPitchAngle := -a.pitch
 	relPitchDeg := geom.Degrees(relPitchAngle)
 
 	midX, midY := float32(bX)+float32(bW)/2, float32(bY)+float32(bH)/2
@@ -85,7 +86,7 @@ func (a *Altimeter) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions) {
 
 	var maxAltitude float32 = float32(model.METERS_PER_UNIT)
 	for i := int(-maxAltitude); i <= int(maxAltitude); i++ {
-		actualAlt := i + int(math.Round(altitude))
+		actualAlt := i + int(math.Round(a.altitude))
 
 		var pipWidth, pipHeight float32
 		if actualAlt%5 == 0 {

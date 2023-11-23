@@ -19,6 +19,9 @@ var (
 type HeatIndicator struct {
 	HUDSprite
 	fontRenderer *etxt.Renderer
+	heat         float64
+	maxHeat      float64
+	dissipation  float64
 }
 
 // NewHeatIndicator creates a heat indicator image to be rendered on demand
@@ -48,6 +51,12 @@ func (h *HeatIndicator) updateFontSize(width, height int) {
 	h.fontRenderer.SetSizePx(int(pxSize))
 }
 
+func (h *HeatIndicator) SetValues(heat, maxHeat, dissipation float64) {
+	h.heat = heat
+	h.maxHeat = maxHeat
+	h.dissipation = dissipation
+}
+
 func (h *HeatIndicator) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions) {
 	screen := hudOpts.Screen
 	h.fontRenderer.SetTarget(screen)
@@ -58,7 +67,7 @@ func (h *HeatIndicator) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions) {
 	midX := float32(bX) + float32(bW)/2
 
 	// current heat level box
-	heatRatio := float32(heat / maxHeat)
+	heatRatio := float32(h.heat / h.maxHeat)
 	if heatRatio > 1 {
 		heatRatio = 1
 	}
@@ -88,12 +97,12 @@ func (h *HeatIndicator) Draw(bounds image.Rectangle, hudOpts *DrawHudOptions) {
 	tColor := hudOpts.HudColor(_colorHeatText)
 	h.fontRenderer.SetColor(color.RGBA(tColor))
 
-	heatStr := fmt.Sprintf("Heat: %0.1f", heat)
+	heatStr := fmt.Sprintf("Heat: %0.1f", h.heat)
 	h.fontRenderer.SetAlign(etxt.Top, etxt.Left)
 	h.fontRenderer.Draw(heatStr, int(oX+2*oT), int(oY+oH+2*oT)) // TODO: calculate better margin spacing
 
 	// current heat dissipation text
-	dissipationStr := fmt.Sprintf("dH/dT: %0.1f", -dissipation)
+	dissipationStr := fmt.Sprintf("dH/dT: %0.1f", -h.dissipation)
 	h.fontRenderer.SetAlign(etxt.Top, etxt.Right)
 	h.fontRenderer.Draw(dissipationStr, int(oX+oW-2*oT), int(oY+oH+2*oT)) // TODO: calculate better margin spacing
 }

@@ -406,7 +406,7 @@ func (g *Game) drawCompass(hudOpts *render.DrawHudOptions) {
 		compass.SetNavHeading(nAngle)
 	}
 
-	compass.SetOrientation(g.player.Heading(), g.player.TurretAngle())
+	compass.SetValues(g.player.Heading(), g.player.TurretAngle())
 	compass.Draw(cBounds, hudOpts)
 }
 
@@ -432,7 +432,8 @@ func (g *Game) drawAltimeter(hudOpts *render.DrawHudOptions) {
 	aBounds := image.Rect(
 		aX, aY, aX+altWidth, aY+altHeight,
 	)
-	altimeter.Draw(aBounds, hudOpts, altitude, g.player.Pitch())
+	altimeter.SetValues(altitude, g.player.Pitch())
+	altimeter.Draw(aBounds, hudOpts)
 }
 
 func (g *Game) drawHeatIndicator(hudOpts *render.DrawHudOptions) {
@@ -457,7 +458,8 @@ func (g *Game) drawHeatIndicator(hudOpts *render.DrawHudOptions) {
 	hBounds := image.Rect(
 		hX, hY, hX+heatWidth, hY+heatHeight,
 	)
-	heat.Draw(hBounds, hudOpts, currHeat, maxHeat, dissipationPerSec)
+	heat.SetValues(currHeat, maxHeat, dissipationPerSec)
+	heat.Draw(hBounds, hudOpts)
 }
 
 func (g *Game) drawThrottle(hudOpts *render.DrawHudOptions) {
@@ -485,7 +487,8 @@ func (g *Game) drawThrottle(hudOpts *render.DrawHudOptions) {
 		tX, tY,
 		tX+throttleWidth, tY+throttleHeight,
 	)
-	throttle.Draw(tBounds, hudOpts, kphVelocity, kphTgtVelocity, kphVelocityZ, kphMax, kphMax/2)
+	throttle.SetValues(kphVelocity, kphTgtVelocity, kphVelocityZ, kphMax, kphMax/2)
+	throttle.Draw(tBounds, hudOpts)
 }
 
 func (g *Game) drawJumpJetIndicator(hudOpts *render.DrawHudOptions) {
@@ -514,7 +517,8 @@ func (g *Game) drawJumpJetIndicator(hudOpts *render.DrawHudOptions) {
 	jBounds := image.Rect(
 		hX, hY, hX+jetsWidth, hY+jetsHeight,
 	)
-	jets.Draw(jBounds, hudOpts, jDuration, jMaxDuration)
+	jets.SetValues(jDuration, jMaxDuration)
+	jets.Draw(jBounds, hudOpts)
 }
 
 func (g *Game) drawRadar(hudOpts *render.DrawHudOptions) {
@@ -626,7 +630,8 @@ func (g *Game) drawRadar(hudOpts *render.DrawHudOptions) {
 	radar.SetRadarBlips(radarBlips[:blipCount])
 
 	cameraViewDegrees := g.fovDegrees / g.camera.FovDepth()
-	radar.Draw(radarBounds, hudOpts, g.player.Pos(), g.player.Heading(), g.player.TurretAngle(), cameraViewDegrees)
+	radar.SetValues(g.player.Pos(), g.player.Heading(), g.player.TurretAngle(), cameraViewDegrees)
+	radar.Draw(radarBounds, hudOpts)
 }
 
 func (g *Game) drawCrosshairs(hudOpts *render.DrawHudOptions) {

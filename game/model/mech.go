@@ -23,8 +23,9 @@ const (
 
 type Mech struct {
 	*UnitModel
-	Resource     *ModelMechResource
-	PowerOnTimer int
+	Resource      *ModelMechResource
+	PowerOffTimer int
+	PowerOnTimer  int
 }
 
 func NewMech(r *ModelMechResource, collisionRadius, collisionHeight float64, cockpitOffset *geom.Vector2) *Mech {
@@ -109,23 +110,31 @@ func (e *Mech) SetPowered(powered bool) {
 	if powered {
 		if !e.powered && e.PowerOnTimer <= 0 {
 			// initiate power on sequence
-			e.PowerOnTimer = int(TICKS_PER_SECOND * MECH_POWER_ON_SECONDS)
+			e.PowerOnTimer = int(MECH_POWER_ON_SECONDS * TICKS_PER_SECOND)
 		}
 	} else {
+		if e.powered && e.PowerOffTimer <= 0 {
+			e.PowerOffTimer = int(UNIT_POWER_OFF_SECONDS * TICKS_PER_SECOND)
+		}
 		e.powered = powered
 	}
 }
 
 func (e *Mech) Update() bool {
-	if !e.powered {
+	// if heat is too high, start shutdown
+	isOverHeated := e.heat > e.MaxHeat()
+	if isOverHeated && e.powered {
+		e.SetPowered(false)
+	} else if !e.powered {
 		// TODO: pause engine ambience when shutdown
-		// ensure certain values are reset when not powered on
-		e.jumpJetsActive = false
-		e.targetRelHeading = 0
-		e.targetVelocity = 0
-		e.targetVelocityZ = 0 // TODO: what happens if shutdown while in air from jumping?
-
-		if e.PowerOnTimer > 0 {
+		if e.PowerOffTimer > 0 {
+			// continue power down sequence
+			e.PowerOffTimer--
+			if e.PowerOffTimer <= 0 {
+				e.PowerOffTimer = 0
+				e.SetPowered(true)
+			}
+		} else if e.PowerOnTimer > 0 {
 			// continue power on sequence
 			e.PowerOnTimer--
 		} else {
@@ -133,6 +142,14 @@ func (e *Mech) Update() bool {
 			e.PowerOnTimer = 0
 			e.powered = true
 		}
+	}
+
+	if !e.powered {
+		// ensure certain values are reset when not powered on
+		e.jumpJetsActive = false
+		e.targetRelHeading = 0
+		e.targetVelocity = 0
+		e.targetVelocityZ = 0
 	}
 
 	if e.jumpJetsActive {

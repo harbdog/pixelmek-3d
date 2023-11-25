@@ -137,17 +137,51 @@ func (g *Game) drawHUD(screen *ebiten.Image) {
 		switch g.player.Unit.(type) {
 		case *model.Mech:
 			m := g.player.Unit.(*model.Mech)
-			if m.PowerOnTimer > 0 {
+			if m.PowerOffTimer > 0 {
+				powerTime := model.TICKS_PER_SECOND * model.UNIT_POWER_OFF_SECONDS
+				remainTime := float64(m.PowerOffTimer)
+				hudPercent := remainTime / powerTime
+
+				for hudType, hudElement := range g.playerHUD {
+					switch hudType {
+					case HUD_HEAT:
+						if m.Heat() > 0 {
+							// keep only heat indicator shown while powering up from heat shutdown
+							hudElement.SetScale(1.0)
+						}
+					default:
+						hudElement.SetScale(hudPercent)
+					}
+				}
+			} else if m.PowerOnTimer > 0 {
 				powerTime := model.TICKS_PER_SECOND * model.MECH_POWER_ON_SECONDS
 				remainTime := float64(m.PowerOnTimer)
 				hudPercent := 1 - (remainTime / powerTime)
 
-				for _, hudElement := range g.playerHUD {
-					// TODO: keep only heat indicator on while powered down from heat shutdown
-					hudElement.SetScale(hudPercent)
+				for hudType, hudElement := range g.playerHUD {
+					switch hudType {
+					case HUD_HEAT:
+						if m.Heat() > 0 {
+							// keep only heat indicator shown while powering up from heat shutdown
+							hudElement.SetScale(1.0)
+						}
+					case HUD_CROSSHAIRS:
+						if m.PowerOnTimer > 1 {
+							// hide crosshairs until fully powered on
+							hudElement.SetScale(0)
+						} else {
+							hudElement.SetScale(1.0)
+						}
+
+					default:
+						hudElement.SetScale(hudPercent)
+					}
 				}
 			} else {
-				// TODO: keep only heat indicator on while powered down from heat shutdown
+				if m.Heat() > 0 {
+					// if hot, keep only heat indicator on while powered down
+					g.drawHeatIndicator(hudOpts)
+				}
 				return
 			}
 		default:
@@ -446,7 +480,7 @@ func (g *Game) drawHeatIndicator(hudOpts *render.DrawHudOptions) {
 	hudW, hudH := hudRect.Dx(), hudRect.Dy()
 
 	// convert heat dissipation to seconds
-	currHeat, maxHeat := g.player.Heat(), 100.0 // FIXME: add MaxHeat to model, determined based on # of heat sinks
+	currHeat, maxHeat := g.player.Heat(), g.player.MaxHeat()
 	dissipationPerSec := g.player.HeatDissipation() * model.TICKS_PER_SECOND
 
 	heatScale := heat.Scale() * g.hudScale

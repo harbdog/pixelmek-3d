@@ -8,6 +8,10 @@ import (
 	"github.com/harbdog/raycaster-go/geom3d"
 )
 
+const (
+	UNIT_POWER_OFF_SECONDS float64 = 1.0
+)
+
 type Unit interface {
 	Entity
 	Name() string
@@ -15,6 +19,7 @@ type Unit interface {
 	Tonnage() float64
 
 	Heat() float64
+	MaxHeat() float64
 	HeatDissipation() float64
 	IsPowered() bool
 	SetPowered(bool)
@@ -126,6 +131,11 @@ func (e *UnitModel) Pitch() float64 {
 
 func (e *UnitModel) Heat() float64 {
 	return e.heat
+}
+
+func (e *UnitModel) MaxHeat() float64 {
+	// FIXME: determine based on # of heat sinks
+	return 100
 }
 
 func (e *UnitModel) HeatDissipation() float64 {

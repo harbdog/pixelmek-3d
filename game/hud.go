@@ -133,7 +133,16 @@ func (g *Game) drawHUD(screen *ebiten.Image) {
 		return
 	}
 
-	if !g.player.IsPowered() {
+	if g.player.IsPowered() {
+		// make sure HUD element scale is properly set in case of just coming from power down
+		hudElement := g.GetHUDElement(HUD_CROSSHAIRS)
+		if hudElement != nil && hudElement.Scale() < 1.0 {
+			for _, hudElement := range g.playerHUD {
+				hudElement.SetScale(1.0)
+			}
+		}
+
+	} else {
 		switch g.player.Unit.(type) {
 		case *model.Mech:
 			m := g.player.Unit.(*model.Mech)
@@ -146,9 +155,12 @@ func (g *Game) drawHUD(screen *ebiten.Image) {
 					switch hudType {
 					case HUD_HEAT:
 						if m.Heat() > 0 {
-							// keep only heat indicator shown while powering up from heat shutdown
+							// keep only heat indicator shown while powering down from heat shutdown
 							hudElement.SetScale(1.0)
+						} else {
+							hudElement.SetScale(hudPercent)
 						}
+
 					default:
 						hudElement.SetScale(hudPercent)
 					}
@@ -164,13 +176,14 @@ func (g *Game) drawHUD(screen *ebiten.Image) {
 						if m.Heat() > 0 {
 							// keep only heat indicator shown while powering up from heat shutdown
 							hudElement.SetScale(1.0)
+						} else {
+							hudElement.SetScale(hudPercent)
 						}
+
 					case HUD_CROSSHAIRS:
 						if m.PowerOnTimer > 1 {
 							// hide crosshairs until fully powered on
 							hudElement.SetScale(0)
-						} else {
-							hudElement.SetScale(1.0)
 						}
 
 					default:
@@ -179,7 +192,7 @@ func (g *Game) drawHUD(screen *ebiten.Image) {
 				}
 			} else {
 				if m.Heat() > 0 {
-					// if hot, keep only heat indicator on while powered down
+					// keep only heat indicator on while powered down if hot
 					g.drawHeatIndicator(hudOpts)
 				}
 				return

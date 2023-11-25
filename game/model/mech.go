@@ -134,6 +134,8 @@ func (e *Mech) Update() bool {
 				e.PowerOffTimer = 0
 				e.SetPowered(true)
 			}
+			// TODO: fix power on sequence starting while still overheated
+			// TODO: fix power on sequence starting if manual power toggle was used to power off
 		} else if e.PowerOnTimer > 0 {
 			// continue power on sequence
 			e.PowerOnTimer--

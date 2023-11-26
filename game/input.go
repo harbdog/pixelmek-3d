@@ -396,7 +396,12 @@ func (g *Game) handleInput() {
 	}
 
 	if g.input.ActionIsJustPressed(ActionPowerToggle) {
-		g.player.SetPowered(!g.player.IsPowered())
+		switch g.player.Powered() {
+		case model.POWER_ON:
+			g.player.SetPowered(model.POWER_OFF_MANUAL)
+		case model.POWER_OFF_MANUAL:
+			g.player.SetPowered(model.POWER_ON)
+		}
 	}
 
 	if (g.mouseMode == MouseModeTurret || g.mouseMode == MouseModeBody) && ebiten.CursorMode() != ebiten.CursorModeCaptured {

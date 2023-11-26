@@ -106,14 +106,15 @@ func (e *Mech) MaxStructurePoints() float64 {
 	return e.Resource.Structure
 }
 
-func (e *Mech) SetPowered(powered bool) {
-	if powered {
-		if !e.powered && e.PowerOnTimer <= 0 {
-			// initiate power on sequence
+func (e *Mech) SetPowered(powered UnitPowerStatus) {
+	if powered == POWER_ON {
+		if e.powered != POWER_ON && e.PowerOnTimer <= 0 {
+			// initiate power up sequence
 			e.PowerOnTimer = int(MECH_POWER_ON_SECONDS * TICKS_PER_SECOND)
 		}
 	} else {
-		if e.powered && e.PowerOffTimer <= 0 {
+		if e.powered == POWER_ON && e.PowerOffTimer <= 0 {
+			// initiate power down sequence
 			e.PowerOffTimer = int(UNIT_POWER_OFF_SECONDS * TICKS_PER_SECOND)
 		}
 		e.powered = powered
@@ -121,32 +122,42 @@ func (e *Mech) SetPowered(powered bool) {
 }
 
 func (e *Mech) Update() bool {
-	// if heat is too high, start shutdown
-	isOverHeated := e.heat > e.MaxHeat()
-	if isOverHeated && e.powered {
-		e.SetPowered(false)
-	} else if !e.powered {
-		// TODO: pause engine ambience when shutdown
-		if e.PowerOffTimer > 0 {
+	isOverHeated := e.OverHeated()
+	if e.powered == POWER_ON {
+		// if heat is too high, auto shutdown
+		if isOverHeated {
+			e.SetPowered(POWER_OFF_HEAT)
+		}
+	} else {
+		switch {
+		case e.PowerOffTimer > 0:
 			// continue power down sequence
 			e.PowerOffTimer--
-			if e.PowerOffTimer <= 0 {
-				e.PowerOffTimer = 0
-				e.SetPowered(true)
+			if e.PowerOffTimer == 0 {
+				switch {
+				case e.powered == POWER_OFF_HEAT:
+					// set power on sequence to begin automatically after overheat status is cleared
+					e.SetPowered(POWER_ON)
+				case e.powered == POWER_OFF_MANUAL:
+					// set special power on timer value to indicate holding
+				}
 			}
-			// TODO: fix power on sequence starting while still overheated
-			// TODO: fix power on sequence starting if manual power toggle was used to power off
-		} else if e.PowerOnTimer > 0 {
+
+		case isOverHeated:
+			// continue cooling down
+			break
+
+		case e.PowerOnTimer > 0:
 			// continue power on sequence
 			e.PowerOnTimer--
-		} else {
-			// set powered on state
-			e.PowerOnTimer = 0
-			e.powered = true
+			if e.PowerOnTimer <= 0 {
+				// power on sequence completed
+				e.powered = POWER_ON
+			}
 		}
 	}
 
-	if !e.powered {
+	if e.powered != POWER_ON {
 		// ensure certain values are reset when not powered on
 		e.jumpJetsActive = false
 		e.targetRelHeading = 0

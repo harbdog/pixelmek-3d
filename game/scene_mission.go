@@ -30,8 +30,6 @@ func NewMissionScene(g *Game) *MissionScene {
 	// start engine ambience
 	g.audio.PlayPowerOnSequence()
 
-	g.player.SetPowered(true)
-
 	return &MissionScene{
 		Game: g,
 	}

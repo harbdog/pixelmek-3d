@@ -133,7 +133,7 @@ func (g *Game) drawHUD(screen *ebiten.Image) {
 		return
 	}
 
-	if g.player.IsPowered() {
+	if g.player.Powered() == model.POWER_ON {
 		// make sure HUD element scale is properly set in case of just coming from power down
 		hudElement := g.GetHUDElement(HUD_CROSSHAIRS)
 		if hudElement != nil && hudElement.Scale() < 1.0 {
@@ -143,10 +143,12 @@ func (g *Game) drawHUD(screen *ebiten.Image) {
 		}
 
 	} else {
-		switch g.player.Unit.(type) {
+		isOverHeated := g.player.OverHeated()
+		switch unitType := g.player.Unit.(type) {
 		case *model.Mech:
 			m := g.player.Unit.(*model.Mech)
-			if m.PowerOffTimer > 0 {
+			switch {
+			case m.PowerOffTimer > 0:
 				powerTime := model.TICKS_PER_SECOND * model.UNIT_POWER_OFF_SECONDS
 				remainTime := float64(m.PowerOffTimer)
 				hudPercent := remainTime / powerTime
@@ -165,7 +167,8 @@ func (g *Game) drawHUD(screen *ebiten.Image) {
 						hudElement.SetScale(hudPercent)
 					}
 				}
-			} else if m.PowerOnTimer > 0 {
+
+			case m.PowerOnTimer > 0 && !isOverHeated:
 				powerTime := model.TICKS_PER_SECOND * model.MECH_POWER_ON_SECONDS
 				remainTime := float64(m.PowerOnTimer)
 				hudPercent := 1 - (remainTime / powerTime)
@@ -190,15 +193,17 @@ func (g *Game) drawHUD(screen *ebiten.Image) {
 						hudElement.SetScale(hudPercent)
 					}
 				}
-			} else {
+
+			default:
 				if m.Heat() > 0 {
 					// keep only heat indicator on while powered down if hot
 					g.drawHeatIndicator(hudOpts)
 				}
 				return
 			}
+
 		default:
-			return
+			panic(fmt.Sprintf("unhandled player HUD power off for unit type %s", unitType))
 		}
 	}
 

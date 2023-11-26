@@ -222,8 +222,8 @@ func (g *Game) initMission() {
 	g.player.SetPos(&geom.Vector2{X: pX, Y: pY})
 	g.player.SetHeading(geom.Radians(pDegrees))
 
-	// init player as powered off
-	g.player.SetPowered(false)
+	// init player as powered off but booting up
+	g.player.SetPowered(model.POWER_ON)
 
 	// init player armament for display
 	if armament := g.GetHUDElement(HUD_ARMAMENT); armament != nil {
@@ -412,7 +412,7 @@ func (g *Game) updatePlayer() {
 		g.player.moved = true
 	}
 
-	if g.player.IsPowered() {
+	if g.player.Powered() == model.POWER_ON {
 		// make sure engine ambience is playing
 		if !g.audio.IsEngineAmbience() {
 			g.audio.StartEngineAmbience()

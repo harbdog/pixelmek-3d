@@ -164,7 +164,7 @@ func (e *UnitModel) SetPowered(powered UnitPowerStatus) {
 }
 
 func (e *UnitModel) TriggerWeapon(w Weapon) bool {
-	if w.Cooldown() > 0 {
+	if e.powered != POWER_ON || w.Cooldown() > 0 {
 		return false
 	}
 

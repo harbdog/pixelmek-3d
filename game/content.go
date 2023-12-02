@@ -269,9 +269,9 @@ func (g *Game) loadMissionSprites() {
 		// TODO: give mission units a bit more of a brain
 		if len(missionMech.PatrolPath) > 0 {
 			mech.PatrolPath = missionMech.PatrolPath
-			mech.SetMechAnimation(render.ANIMATE_STRUT)
+			mech.SetMechAnimation(render.MECH_ANIMATE_STRUT)
 		} else {
-			mech.SetMechAnimation(render.ANIMATE_IDLE)
+			mech.SetMechAnimation(render.MECH_ANIMATE_IDLE)
 		}
 
 		g.sprites.addMechSprite(mech)

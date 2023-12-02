@@ -10,18 +10,19 @@ import (
 type MechAnimationIndex int
 
 const (
-	ANIMATE_STATIC MechAnimationIndex = -1
-	ANIMATE_IDLE   MechAnimationIndex = 0
-	ANIMATE_STRUT  MechAnimationIndex = 1
-	// TODO: ANIMATE_SHUTDOWN, ANIMATE_JUMP?
-	ANIMATE_DESTRUCT MechAnimationIndex = 2
-	NUM_ANIMATIONS   MechAnimationIndex = 3
+	MECH_ANIMATE_IDLE MechAnimationIndex = iota
+	MECH_ANIMATE_STRUT
+	// TODO: MECH_ANIMATE_JUMP
+	// TODO: MECH_ANIMATE_SHUTDOWN
+	MECH_ANIMATE_DESTRUCT
+	NUM_MECH_ANIMATIONS
+	MECH_ANIMATE_STATIC MechAnimationIndex = -1
 )
 
 type MechSpriteAnimate struct {
 	sheet            *ebiten.Image
 	maxCols, maxRows int
-	numColsAtRow     [NUM_ANIMATIONS]int
+	numColsAtRow     [NUM_MECH_ANIMATIONS]int
 }
 
 type mechAnimatePart struct {
@@ -34,7 +35,7 @@ func NewMechAnimationSheetFromImage(srcImage *ebiten.Image) *MechSpriteAnimate {
 	// all mech sprite sheets have 6 columns of images in the sheet:
 	// [full, torso, left arm, right arm, left leg, right leg]
 	srcWidth, srcHeight := srcImage.Bounds().Dx(), srcImage.Bounds().Dy()
-	uWidth, uHeight := int(float64(srcWidth)/float64(NUM_PARTS)), srcHeight
+	uWidth, uHeight := int(float64(srcWidth)/float64(NUM_MECH_PARTS)), srcHeight
 
 	uSize := uWidth
 	if uHeight > uWidth {
@@ -46,11 +47,11 @@ func NewMechAnimationSheetFromImage(srcImage *ebiten.Image) *MechSpriteAnimate {
 	centerX, bottomY := float64(uSize)/2-float64(uWidth)/2, float64(uSize-uHeight-1)
 
 	// maxCols will be determined later based on how many frames needed by any single animation row
-	maxRows, maxCols := int(NUM_ANIMATIONS), 1
+	maxRows, maxCols := int(NUM_MECH_ANIMATIONS), 1
 
 	// separate out each limb part from source image
-	srcParts := make([]*mechAnimatePart, int(NUM_PARTS))
-	for c := 0; c < int(NUM_PARTS); c++ {
+	srcParts := make([]*mechAnimatePart, int(NUM_MECH_PARTS))
+	for c := 0; c < int(NUM_MECH_PARTS); c++ {
 		x, y := c*uWidth, 0
 		cellRect := image.Rect(x, y, x+uWidth, y+uHeight)
 		cellImg := srcImage.SubImage(cellRect).(*ebiten.Image)
@@ -58,28 +59,28 @@ func NewMechAnimationSheetFromImage(srcImage *ebiten.Image) *MechSpriteAnimate {
 	}
 
 	// calculate number of animations (rows) and frames for each animation (cols)
-	numColsAtRow := [NUM_ANIMATIONS]int{}
+	numColsAtRow := [NUM_MECH_ANIMATIONS]int{}
 
 	// idle animation: only arms and torso move, for now going with 4% pixel movement for both
 	idlePxPerLimb := 0.02 * float64(uHeight)
-	numColsAtRow[ANIMATE_IDLE] = 8 // 4x2 = up -> down -> down -> up (both arms only)
-	if numColsAtRow[ANIMATE_IDLE] > maxCols {
-		maxCols = numColsAtRow[ANIMATE_IDLE]
+	numColsAtRow[MECH_ANIMATE_IDLE] = 8 // 4x2 = up -> down -> down -> up (both arms only)
+	if numColsAtRow[MECH_ANIMATE_IDLE] > maxCols {
+		maxCols = numColsAtRow[MECH_ANIMATE_IDLE]
 	}
 
 	// strut animation: for now going with 2% for arms, 6% pixel movement for legs
 	strutPxPerArm, strutPxPerLeg := 0.02*float64(uHeight), 0.06*float64(uHeight)
-	numColsAtRow[ANIMATE_STRUT] = 16 // 4x4 = up -> down -> down -> up (starting with left arm, reverse right arm)
-	if numColsAtRow[ANIMATE_STRUT] > maxCols {
-		maxCols = numColsAtRow[ANIMATE_STRUT]
+	numColsAtRow[MECH_ANIMATE_STRUT] = 16 // 4x4 = up -> down -> down -> up (starting with left arm, reverse right arm)
+	if numColsAtRow[MECH_ANIMATE_STRUT] > maxCols {
+		maxCols = numColsAtRow[MECH_ANIMATE_STRUT]
 	}
 
 	// destruction animation: for now arms and torso drop towards the ground 40% of the pixel height
 	// TODO: make bigger mechs having longer destruction animate (more frames)
 	destructPxPerLimb := 0.4 * float64(uHeight)
-	numColsAtRow[ANIMATE_DESTRUCT] = 16
-	if numColsAtRow[ANIMATE_DESTRUCT] > maxCols {
-		maxCols = numColsAtRow[ANIMATE_DESTRUCT]
+	numColsAtRow[MECH_ANIMATE_DESTRUCT] = 16
+	if numColsAtRow[MECH_ANIMATE_DESTRUCT] > maxCols {
+		maxCols = numColsAtRow[MECH_ANIMATE_DESTRUCT]
 	}
 
 	mechSheet := ebiten.NewImage(maxCols*uSize, maxRows*uSize)
@@ -105,14 +106,14 @@ func NewMechAnimationSheetFromImage(srcImage *ebiten.Image) *MechSpriteAnimate {
 
 // drawMechIdle draws onto the sheet the idle animation in its assigned row in the sheet
 func (m *MechSpriteAnimate) drawMechIdle(uSize int, adjustX, adjustY, pxPerLimb float64, parts []*mechAnimatePart) {
-	row, col := int(ANIMATE_IDLE), 0
+	row, col := int(MECH_ANIMATE_IDLE), 0
 
 	resetMechAnimationParts(parts)
-	ct := parts[PART_CT]
-	la := parts[PART_LA]
-	ra := parts[PART_RA]
-	ll := parts[PART_LL]
-	rl := parts[PART_RL]
+	ct := parts[MECH_PART_CT]
+	la := parts[MECH_PART_LA]
+	ra := parts[MECH_PART_RA]
+	ll := parts[MECH_PART_LL]
+	rl := parts[MECH_PART_RL]
 
 	// first frame of idle animation is static image
 	m.drawMechAnimationParts(row, col, 1, uSize, adjustX, adjustY, ct, 0, la, 0, 0, ra, 0, 0, ll, 0, 0, rl, 0, 0)
@@ -144,14 +145,14 @@ func (m *MechSpriteAnimate) drawMechIdle(uSize int, adjustX, adjustY, pxPerLimb 
 
 // drawMechStrut draws onto the sheet the strut animation in its assigned row in the sheet
 func (m *MechSpriteAnimate) drawMechStrut(uSize int, adjustX, adjustY, pxPerArm, pxPerLeg float64, parts []*mechAnimatePart) {
-	row, col := int(ANIMATE_STRUT), 0
+	row, col := int(MECH_ANIMATE_STRUT), 0
 
 	resetMechAnimationParts(parts)
-	ct := parts[PART_CT]
-	la := parts[PART_LA]
-	ra := parts[PART_RA]
-	ll := parts[PART_LL]
-	rl := parts[PART_RL]
+	ct := parts[MECH_PART_CT]
+	la := parts[MECH_PART_LA]
+	ra := parts[MECH_PART_RA]
+	ll := parts[MECH_PART_LL]
+	rl := parts[MECH_PART_RL]
 
 	// ct needs to also move up as a leg moves up, half as much
 	pxPerTorso := pxPerLeg / 2
@@ -182,14 +183,14 @@ func (m *MechSpriteAnimate) drawMechStrut(uSize int, adjustX, adjustY, pxPerArm,
 
 // drawMechDestruction draws onto the sheet the destruct animation in its assigned row in the sheet
 func (m *MechSpriteAnimate) drawMechDestruction(uSize int, adjustX, adjustY, pxPerLimb float64, parts []*mechAnimatePart) {
-	row, col := int(ANIMATE_DESTRUCT), 0
+	row, col := int(MECH_ANIMATE_DESTRUCT), 0
 
 	resetMechAnimationParts(parts)
-	ct := parts[PART_CT]
-	la := parts[PART_LA]
-	ra := parts[PART_RA]
-	ll := parts[PART_LL]
-	rl := parts[PART_RL]
+	ct := parts[MECH_PART_CT]
+	la := parts[MECH_PART_LA]
+	ra := parts[MECH_PART_RA]
+	ll := parts[MECH_PART_LL]
+	rl := parts[MECH_PART_RL]
 
 	// arms and ct drop all the way down with limb rotation for arms and legs falling off
 	rotPerLeft, rotPerRight := -geom.HalfPi, geom.HalfPi

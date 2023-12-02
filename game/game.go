@@ -691,9 +691,9 @@ func (g *Game) updateSprites() {
 				s := k.(*render.MechSprite)
 				sUnit := model.EntityUnit(s.Entity)
 				if s.IsDestroyed() {
-					if s.GetMechAnimation() != render.ANIMATE_DESTRUCT {
+					if s.MechAnimation() != render.MECH_ANIMATE_DESTRUCT {
 						// play unit destruction animation
-						s.SetMechAnimation(render.ANIMATE_DESTRUCT)
+						s.SetMechAnimation(render.MECH_ANIMATE_DESTRUCT)
 					} else if s.LoopCounter() >= 1 {
 						// delete when animation is over
 						g.sprites.deleteMechSprite(s)
@@ -707,6 +707,20 @@ func (g *Game) updateSprites() {
 				g.updateMechPosition(s)
 				s.Update(g.player.Pos())
 				g.updateWeaponCooldowns(sUnit)
+
+				if sUnit.Powered() != model.POWER_ON {
+					s.SetMechAnimation(render.MECH_ANIMATE_STATIC)
+				} else {
+					if s.Velocity() == 0 && s.VelocityZ() == 0 {
+						if s.MechAnimation() != render.MECH_ANIMATE_IDLE {
+							s.SetMechAnimation(render.MECH_ANIMATE_IDLE)
+						}
+					} else {
+						if s.MechAnimation() != render.MECH_ANIMATE_STRUT {
+							s.SetMechAnimation(render.MECH_ANIMATE_STRUT)
+						}
+					}
+				}
 
 				if s.StrideStomp() {
 					s.ResetStrideStomp()
@@ -830,6 +844,18 @@ func (g *Game) updateSprites() {
 }
 
 func (g *Game) updateMechPosition(s *render.MechSprite) {
+	if s.Mech().Powered() != model.POWER_ON {
+		// TODO: refactor to use same update logic from player shutdown
+		s.SetVelocity(0)
+		s.SetVelocityZ(0)
+
+		if s.Mech().Heat() < s.Mech().MaxHeat() {
+			s.Mech().SetPowered(model.POWER_ON)
+		}
+		s.Mech().Update()
+		return
+	}
+
 	// TODO: give mechs a bit more of a brain than this
 	sPosition := s.Pos()
 	if len(s.PatrolPath) > 0 {
@@ -851,6 +877,7 @@ func (g *Game) updateMechPosition(s *render.MechSprite) {
 				s.PatrolPathIndex = 0
 			}
 			g.updateMechPosition(s)
+			return
 		} else {
 			// keep movements towards current patrol point
 			s.SetHeading(angle)
@@ -873,6 +900,8 @@ func (g *Game) updateMechPosition(s *render.MechSprite) {
 			s.SetPosZ(newPosZ)
 		}
 	}
+
+	s.Mech().Update()
 }
 
 func (g *Game) updateVehiclePosition(s *render.VehicleSprite) {

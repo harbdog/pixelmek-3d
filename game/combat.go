@@ -128,6 +128,11 @@ func (g *Game) fireTestWeaponAtPlayer() {
 	// Just for testing! Firing test projectiles at player
 	playerPosition := g.player.Pos()
 	playerPositionZ := g.player.PosZ()
+	var playerTarget model.Unit
+	if g.player.Target() != nil {
+		// if player has a target, only it shoots at the player
+		playerTarget = model.EntityUnit(g.player.Target())
+	}
 	for spriteType := range g.sprites.sprites {
 		g.sprites.sprites[spriteType].Range(func(k, _ interface{}) bool {
 			var pX, pY, pZ float64
@@ -171,7 +176,7 @@ func (g *Game) fireTestWeaponAtPlayer() {
 				unit = model.EntityUnit(s.Entity)
 			}
 
-			if unit == nil {
+			if unit == nil || (playerTarget != nil && playerTarget != unit) {
 				return true
 			}
 

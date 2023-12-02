@@ -13,7 +13,7 @@ const (
 	MECH_ANIMATE_IDLE MechAnimationIndex = iota
 	MECH_ANIMATE_STRUT
 	// TODO: MECH_ANIMATE_JUMP
-	// TODO: MECH_ANIMATE_SHUTDOWN
+	MECH_ANIMATE_SHUTDOWN
 	MECH_ANIMATE_DESTRUCT
 	NUM_MECH_ANIMATIONS
 	MECH_ANIMATE_STATIC MechAnimationIndex = -1
@@ -22,7 +22,13 @@ const (
 type MechSpriteAnimate struct {
 	sheet            *ebiten.Image
 	maxCols, maxRows int
-	numColsAtRow     [NUM_MECH_ANIMATIONS]int
+	config           [NUM_MECH_ANIMATIONS]*mechAnimateConfig
+}
+
+type mechAnimateConfig struct {
+	numCols       int
+	animationRate int
+	maxLoops      int
 }
 
 type mechAnimatePart struct {
@@ -59,37 +65,60 @@ func NewMechAnimationSheetFromImage(srcImage *ebiten.Image) *MechSpriteAnimate {
 	}
 
 	// calculate number of animations (rows) and frames for each animation (cols)
-	numColsAtRow := [NUM_MECH_ANIMATIONS]int{}
+	animationCfg := [NUM_MECH_ANIMATIONS]*mechAnimateConfig{}
 
-	// idle animation: only arms and torso move, for now going with 4% pixel movement for both
+	// idle animation: only arms and torso move, for now going with 2% pixel movement for both
 	idlePxPerLimb := 0.02 * float64(uHeight)
-	numColsAtRow[MECH_ANIMATE_IDLE] = 8 // 4x2 = up -> down -> down -> up (both arms only)
-	if numColsAtRow[MECH_ANIMATE_IDLE] > maxCols {
-		maxCols = numColsAtRow[MECH_ANIMATE_IDLE]
+	animationCfg[MECH_ANIMATE_IDLE] = &mechAnimateConfig{
+		numCols:       8, // 4x2 = up -> down -> down -> up (both arms only)
+		animationRate: 7,
+		maxLoops:      0,
+	}
+	if animationCfg[MECH_ANIMATE_IDLE].numCols > maxCols {
+		maxCols = animationCfg[MECH_ANIMATE_IDLE].numCols
 	}
 
 	// strut animation: for now going with 2% for arms, 6% pixel movement for legs
 	strutPxPerArm, strutPxPerLeg := 0.02*float64(uHeight), 0.06*float64(uHeight)
-	numColsAtRow[MECH_ANIMATE_STRUT] = 16 // 4x4 = up -> down -> down -> up (starting with left arm, reverse right arm)
-	if numColsAtRow[MECH_ANIMATE_STRUT] > maxCols {
-		maxCols = numColsAtRow[MECH_ANIMATE_STRUT]
+	animationCfg[MECH_ANIMATE_STRUT] = &mechAnimateConfig{
+		numCols:       16, // 4x4 = up -> down -> down -> up (starting with left arm, reverse right arm)
+		animationRate: 3,
+		maxLoops:      0,
+	}
+	if animationCfg[MECH_ANIMATE_STRUT].numCols > maxCols {
+		maxCols = animationCfg[MECH_ANIMATE_STRUT].numCols
+	}
+
+	// shut down animation: torso drops 8% pixel height, followed by arms dropping 12% pixel height
+	downPxTorso, downPxPerArm := 0.08*float64(uHeight), 0.12*float64(uHeight)
+	animationCfg[MECH_ANIMATE_SHUTDOWN] = &mechAnimateConfig{
+		numCols:       12,
+		animationRate: 8,
+		maxLoops:      1,
+	}
+	if animationCfg[MECH_ANIMATE_SHUTDOWN].numCols > maxCols {
+		maxCols = animationCfg[MECH_ANIMATE_SHUTDOWN].numCols
 	}
 
 	// destruction animation: for now arms and torso drop towards the ground 40% of the pixel height
-	// TODO: make bigger mechs having longer destruction animate (more frames)
+	// TODO: make bigger mechs having longer destruction animations (more frames)
 	destructPxPerLimb := 0.4 * float64(uHeight)
-	numColsAtRow[MECH_ANIMATE_DESTRUCT] = 16
-	if numColsAtRow[MECH_ANIMATE_DESTRUCT] > maxCols {
-		maxCols = numColsAtRow[MECH_ANIMATE_DESTRUCT]
+	animationCfg[MECH_ANIMATE_DESTRUCT] = &mechAnimateConfig{
+		numCols:       16,
+		animationRate: 2,
+		maxLoops:      1,
+	}
+	if animationCfg[MECH_ANIMATE_DESTRUCT].numCols > maxCols {
+		maxCols = animationCfg[MECH_ANIMATE_DESTRUCT].numCols
 	}
 
 	mechSheet := ebiten.NewImage(maxCols*uSize, maxRows*uSize)
 
 	m := &MechSpriteAnimate{
-		sheet:        mechSheet,
-		maxCols:      maxCols,
-		maxRows:      maxRows,
-		numColsAtRow: numColsAtRow,
+		sheet:   mechSheet,
+		maxCols: maxCols,
+		maxRows: maxRows,
+		config:  animationCfg,
 	}
 
 	// draw idle animation
@@ -97,6 +126,9 @@ func NewMechAnimationSheetFromImage(srcImage *ebiten.Image) *MechSpriteAnimate {
 
 	// draw strut animation
 	m.drawMechStrut(uSize, centerX, bottomY, strutPxPerArm, strutPxPerLeg, srcParts)
+
+	// draw shutdown animation
+	m.drawMechShutdown(uSize, centerX, bottomY, downPxTorso, downPxPerArm, srcParts)
 
 	// draw destruction animation
 	m.drawMechDestruction(uSize, centerX, bottomY, destructPxPerLimb, srcParts)
@@ -179,6 +211,36 @@ func (m *MechSpriteAnimate) drawMechStrut(uSize int, adjustX, adjustY, pxPerArm,
 	m.drawMechAnimationParts(
 		row, col, 4, uSize, adjustX, adjustY, ct, pxPerTorso, la, -pxPerArm, 0, ra, pxPerArm, 0, ll, pxPerLeg, 0, rl, 0, 0,
 	)
+}
+
+// drawMechShutdown draws onto the sheet the idle animation in its assigned row in the sheet
+func (m *MechSpriteAnimate) drawMechShutdown(uSize int, adjustX, adjustY, downPxTorso, downPxPerArm float64, parts []*mechAnimatePart) {
+	row, col := int(MECH_ANIMATE_SHUTDOWN), 0
+
+	resetMechAnimationParts(parts)
+	ct := parts[MECH_PART_CT]
+	la := parts[MECH_PART_LA]
+	ra := parts[MECH_PART_RA]
+	ll := parts[MECH_PART_LL]
+	rl := parts[MECH_PART_RL]
+
+	// 3x torso down
+	m.drawMechAnimationParts(
+		row, col, 3, uSize, adjustX, adjustY, ct, downPxTorso/2, la, 0, 0, ra, 0, 0, ll, 0, 0, rl, 0, 0,
+	)
+	col += 3
+
+	// 6x torso down with arms down
+	m.drawMechAnimationParts(
+		row, col, 6, uSize, adjustX, adjustY, ct, downPxTorso, la, downPxPerArm, 0, ra, downPxPerArm, 0, ll, 0, 0, rl, 0, 0,
+	)
+	col += 6
+
+	// 3x arms down
+	m.drawMechAnimationParts(
+		row, col, 3, uSize, adjustX, adjustY, ct, 0, la, downPxPerArm/2, 0, ra, downPxPerArm/2, 0, ll, 0, 0, rl, 0, 0,
+	)
+	col += 3
 }
 
 // drawMechDestruction draws onto the sheet the destruct animation in its assigned row in the sheet
@@ -265,10 +327,6 @@ func (m *MechSpriteAnimate) drawMechAnimFrame(
 ) {
 	w, h := ct.Bounds().Dx(), ct.Bounds().Dy()
 
-	op_ct := &ebiten.DrawImageOptions{}
-	op_ct.GeoM.Translate(offX, offY+offCT)
-	m.sheet.DrawImage(ct, op_ct)
-
 	op_ll := &ebiten.DrawImageOptions{}
 	if rotLL != 0 {
 		op_ll.GeoM.Translate(-float64(w)/2, -float64(h/2))
@@ -286,6 +344,10 @@ func (m *MechSpriteAnimate) drawMechAnimFrame(
 	}
 	op_rl.GeoM.Translate(offX, offY+offRL)
 	m.sheet.DrawImage(rl, op_rl)
+
+	op_ct := &ebiten.DrawImageOptions{}
+	op_ct.GeoM.Translate(offX, offY+offCT)
+	m.sheet.DrawImage(ct, op_ct)
 
 	op_la := &ebiten.DrawImageOptions{}
 	if rotLA != 0 {

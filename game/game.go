@@ -693,7 +693,7 @@ func (g *Game) updateSprites() {
 				if s.IsDestroyed() {
 					if s.MechAnimation() != render.MECH_ANIMATE_DESTRUCT {
 						// play unit destruction animation
-						s.SetMechAnimation(render.MECH_ANIMATE_DESTRUCT)
+						s.SetMechAnimation(render.MECH_ANIMATE_DESTRUCT, false)
 					} else if s.LoopCounter() >= 1 {
 						// delete when animation is over
 						g.sprites.deleteMechSprite(s)
@@ -709,15 +709,17 @@ func (g *Game) updateSprites() {
 				g.updateWeaponCooldowns(sUnit)
 
 				if sUnit.Powered() != model.POWER_ON {
-					s.SetMechAnimation(render.MECH_ANIMATE_STATIC)
+					if s.MechAnimation() != render.MECH_ANIMATE_SHUTDOWN {
+						s.SetMechAnimation(render.MECH_ANIMATE_SHUTDOWN, true)
+					}
 				} else {
 					if s.Velocity() == 0 && s.VelocityZ() == 0 {
 						if s.MechAnimation() != render.MECH_ANIMATE_IDLE {
-							s.SetMechAnimation(render.MECH_ANIMATE_IDLE)
+							s.SetMechAnimation(render.MECH_ANIMATE_IDLE, false)
 						}
 					} else {
 						if s.MechAnimation() != render.MECH_ANIMATE_STRUT {
-							s.SetMechAnimation(render.MECH_ANIMATE_STRUT)
+							s.SetMechAnimation(render.MECH_ANIMATE_STRUT, false)
 						}
 					}
 				}

@@ -78,23 +78,19 @@ func (m *MechSprite) Clone(asUnit model.Unit) *MechSprite {
 	return mClone
 }
 
-func (s *MechSprite) SetMechAnimation(animateIndex MechAnimationIndex) {
+func (s *MechSprite) SetMechAnimation(animateIndex MechAnimationIndex, reversed bool) {
 	s.animateIndex = animateIndex
+	s.animReversed = reversed
 	s.ResetAnimation()
 
-	switch animateIndex {
-	case MECH_ANIMATE_IDLE:
-		s.animationRate = 7
+	switch {
+	case s.animateIndex <= MECH_ANIMATE_STATIC:
+		s.animationRate = 0
 		s.maxLoops = 0
-	case MECH_ANIMATE_STRUT:
-		s.animationRate = 3
-		s.maxLoops = 0
-	case MECH_ANIMATE_DESTRUCT:
-		s.animationRate = 2
-		s.maxLoops = 1
-	default:
-		s.animationRate = 1
-		s.maxLoops = 0
+	case s.animateIndex > MECH_ANIMATE_STATIC:
+		animationCfg := s.mechAnimate.config[animateIndex]
+		s.animationRate = animationCfg.animationRate
+		s.maxLoops = animationCfg.maxLoops
 	}
 }
 
@@ -111,7 +107,12 @@ func (s *MechSprite) ResetAnimation() {
 		s.texNum = 0
 	case s.animateIndex > MECH_ANIMATE_STATIC:
 		animRow := int(s.animateIndex)
-		s.texNum = animRow * s.mechAnimate.maxCols
+		if s.animReversed {
+			animationCfg := s.mechAnimate.config[s.animateIndex]
+			s.texNum = (animRow * s.mechAnimate.maxCols) + (animationCfg.numCols - 1)
+		} else {
+			s.texNum = animRow * s.mechAnimate.maxCols
+		}
 	}
 }
 
@@ -141,7 +142,7 @@ func (s *MechSprite) Update(camPos *geom.Vector2) {
 		animRow := int(s.animateIndex)
 
 		minTexNum := animRow * s.mechAnimate.maxCols
-		maxTexNum := minTexNum + s.mechAnimate.numColsAtRow[animRow] - 1
+		maxTexNum := minTexNum + s.mechAnimate.config[animRow].numCols - 1
 
 		s.animCounter = 0
 

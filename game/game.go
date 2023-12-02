@@ -704,11 +704,26 @@ func (g *Game) updateSprites() {
 					break
 				}
 
+				mech := s.Mech()
 				g.updateMechPosition(s)
 				s.Update(g.player.Pos())
 				g.updateWeaponCooldowns(sUnit)
 
 				if sUnit.Powered() != model.POWER_ON {
+					poweringOn := s.AnimationReversed()
+					if mech.PowerOffTimer > 0 &&
+						(s.MechAnimation() != render.MECH_ANIMATE_SHUTDOWN || poweringOn) {
+
+						// start shutdown animation since unit is powering off
+						s.SetMechAnimation(render.MECH_ANIMATE_SHUTDOWN, false)
+					}
+					if mech.PowerOffTimer <= 0 && mech.PowerOnTimer > 0 &&
+						(s.MechAnimation() != render.MECH_ANIMATE_SHUTDOWN || !poweringOn) {
+
+						// reverse shutdown animation since unit is powering on
+						s.SetMechAnimation(render.MECH_ANIMATE_SHUTDOWN, true)
+
+					}
 					if s.MechAnimation() != render.MECH_ANIMATE_SHUTDOWN {
 						s.SetMechAnimation(render.MECH_ANIMATE_SHUTDOWN, true)
 					}
@@ -727,7 +742,7 @@ func (g *Game) updateSprites() {
 				if s.StrideStomp() {
 					s.ResetStrideStomp()
 					pos, posZ := s.Pos(), s.PosZ()
-					mechStompFile, err := StompSFXForMech(sUnit.(*model.Mech))
+					mechStompFile, err := StompSFXForMech(mech)
 					if err == nil {
 						g.audio.PlayExternalAudio(g, mechStompFile, pos.X, pos.Y, posZ, 2.5, 0.35)
 					}

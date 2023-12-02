@@ -133,19 +133,14 @@ func (e *Mech) Update() bool {
 		case e.PowerOffTimer > 0:
 			// continue power down sequence
 			e.PowerOffTimer--
-			if e.PowerOffTimer == 0 {
-				switch {
-				case e.powered == POWER_OFF_HEAT:
-					// set power on sequence to begin automatically after overheat status is cleared
-					e.SetPowered(POWER_ON)
-				case e.powered == POWER_OFF_MANUAL:
-					// set special power on timer value to indicate holding
-				}
-			}
 
 		case isOverHeated:
 			// continue cooling down
 			break
+
+		case e.PowerOnTimer == 0 && !isOverHeated:
+			// set power on sequence to begin automatically after overheat status is cleared
+			e.SetPowered(POWER_ON)
 
 		case e.PowerOnTimer > 0:
 			// continue power on sequence

@@ -740,7 +740,18 @@ func (g *Game) updateSprites() {
 						s.SetMechAnimation(render.MECH_ANIMATE_SHUTDOWN, true)
 					}
 				} else {
-					if s.Velocity() == 0 && s.VelocityZ() == 0 {
+					if mech.JumpJetsActive() {
+						falling := s.AnimationReversed()
+						if s.MechAnimation() != render.MECH_ANIMATE_JUMP_JET || falling {
+							s.SetMechAnimation(render.MECH_ANIMATE_JUMP_JET, false)
+						}
+					} else if s.VelocityZ() < 0 {
+						falling := s.AnimationReversed()
+						if s.MechAnimation() != render.MECH_ANIMATE_JUMP_JET || !falling {
+							// reverse jump jet animation for falling
+							s.SetMechAnimation(render.MECH_ANIMATE_JUMP_JET, true)
+						}
+					} else if s.Velocity() == 0 && s.VelocityZ() == 0 {
 						if s.MechAnimation() != render.MECH_ANIMATE_IDLE {
 							s.SetMechAnimation(render.MECH_ANIMATE_IDLE, false)
 						}
@@ -913,24 +924,32 @@ func (g *Game) updateMechPosition(s *render.MechSprite) {
 		}
 	}
 
-	if s.Velocity() != 0 {
+	if s.Mech().Update() {
+		// TODO: refactor to use same update function as g.updatePlayer()
+
 		vLine := geom.LineFromAngle(sPosition.X, sPosition.Y, s.Heading(), s.Velocity())
+
+		posZ, velocityZ := s.PosZ(), s.VelocityZ()
+		if velocityZ != 0 {
+			posZ += velocityZ
+		}
 
 		xCheck := vLine.X2
 		yCheck := vLine.Y2
 
-		newPos, newPosZ, isCollision, _ := g.getValidMove(s.Entity, xCheck, yCheck, s.PosZ(), false)
+		newPos, newPosZ, isCollision, _ := g.getValidMove(s.Entity, xCheck, yCheck, posZ, false)
 		if isCollision {
-			// for testing purposes, letting the sample sprite ping pong off walls in somewhat random direction
-			s.SetHeading(randFloat(-geom.Pi, geom.Pi))
-			s.SetVelocity(randFloat(0.005, 0.009))
+			// TODO: collision damage against units based on mech and speed
+
+			// if mech is falling to the ground, let it land!
+			if velocityZ < 0 && posZ <= 0 && newPosZ == 0 {
+				s.SetPosZ(newPosZ)
+			}
 		} else {
 			s.SetPos(newPos)
 			s.SetPosZ(newPosZ)
 		}
 	}
-
-	s.Mech().Update()
 }
 
 func (g *Game) updateVehiclePosition(s *render.VehicleSprite) {

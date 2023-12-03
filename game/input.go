@@ -392,7 +392,15 @@ func (g *Game) handleInput() {
 
 	if g.debug && ebiten.IsMouseButtonPressed(ebiten.MouseButtonMiddle) {
 		// TESTING purposes only
-		g.fireTestWeaponAtPlayer()
+		if g.input.ActionIsPressed(ActionWeaponGroupSetModifier) {
+			target := model.EntityUnit(g.player.Target())
+			if target != nil && target.JumpJets() > 0 {
+				target.SetJumpJetsActive(true)
+				target.SetTargetVelocityZ(0.05)
+			}
+		} else {
+			g.fireTestWeaponAtPlayer()
+		}
 	}
 
 	if g.input.ActionIsJustPressed(ActionPowerToggle) {

@@ -414,13 +414,25 @@ func (g *Game) updatePlayer() {
 
 	if g.player.Powered() == model.POWER_ON {
 		// make sure engine ambience is playing
-		if !g.audio.IsEngineAmbience() {
+		if g.audio.EngineAmbience() != _SFX_HINT_ENGINE {
 			g.audio.StartEngineAmbience()
 		}
 	} else {
-		// make sure engine ambience is not playing
-		if g.audio.IsEngineAmbience() {
+		// play power down sequence and make sure engine ambience is not playing
+		engAmbience := g.audio.EngineAmbience()
+		if engAmbience == _SFX_HINT_ENGINE {
 			g.audio.StopEngineAmbience()
+			g.audio.PlayPowerOffSequence()
+		} else {
+			// check if power on sound needs to be started
+			switch g.player.Unit.(type) {
+			case *model.Mech:
+				m := g.player.Unit.(*model.Mech)
+				if m.PowerOffTimer <= 0 && m.PowerOnTimer > 0 && engAmbience != _SFX_HINT_POWER_ON {
+					// play power on sequence if not already playing
+					g.audio.PlayPowerOnSequence()
+				}
+			}
 		}
 	}
 

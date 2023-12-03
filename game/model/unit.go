@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	UNIT_POWER_OFF_SECONDS float64 = 1.0
+	UNIT_POWER_OFF_SECONDS float64 = 1.5
 )
 
 type UnitPowerStatus int

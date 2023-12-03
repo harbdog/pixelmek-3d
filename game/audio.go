@@ -70,8 +70,17 @@ type SFXSource struct {
 
 	_sfxFile            string
 	_pausedWhilePlaying bool
-	_isAmbience         bool
+	_sfxType            _sfxTypeHint
 }
+
+type _sfxTypeHint int
+
+const (
+	_SFX_HINT_NONE _sfxTypeHint = iota
+	_SFX_HINT_ENGINE
+	_SFX_HINT_POWER_ON
+	_SFX_HINT_POWER_OFF
+)
 
 func init() {
 	audio.NewContext(resources.SampleRate)
@@ -432,7 +441,7 @@ func (a *AudioHandler) StartMusicFromFile(path string) {
 // StartEngineAmbience starts the ambient engine audio loop
 func (a *AudioHandler) StartEngineAmbience() {
 	engine := a.sfx.mainSources[AUDIO_ENGINE]
-	engine._isAmbience = true
+	engine._sfxType = _SFX_HINT_ENGINE
 	if engine.player != nil {
 		engine.player.Close()
 	}
@@ -456,28 +465,39 @@ func (a *AudioHandler) StartEngineAmbience() {
 // StopEngineAmbience stop the ambient engine audio loop
 func (a *AudioHandler) StopEngineAmbience() {
 	engine := a.sfx.mainSources[AUDIO_ENGINE]
-	if engine._isAmbience && engine.player != nil && engine.player.IsPlaying() {
-		engine._isAmbience = false
+	if engine._sfxType == _SFX_HINT_ENGINE && engine.player != nil && engine.player.IsPlaying() {
+		engine._sfxType = _SFX_HINT_NONE
 		engine.player.Close()
 	}
 }
 
 // IsEngineAmbience indicates whether the current engine audio is the ambience loop
-func (a *AudioHandler) IsEngineAmbience() bool {
-	engine := a.sfx.mainSources[AUDIO_ENGINE]
-	return engine._isAmbience
+func (a *AudioHandler) EngineAmbience() _sfxTypeHint {
+	return a.sfx.mainSources[AUDIO_ENGINE]._sfxType
 }
 
 // PlayPowerOnSequence plays the power on sound using the engine audio source
 func (a *AudioHandler) PlayPowerOnSequence() {
 	engine := a.sfx.mainSources[AUDIO_ENGINE]
-	engine._isAmbience = false
+	engine._sfxType = _SFX_HINT_POWER_ON
 	if engine.player != nil {
 		engine.player.Close()
 	}
 
 	// TODO: different power on sounds for different tonnages/unit types
 	engine.LoadSFX(a, "audio/sfx/power-on.ogg")
+	engine.player.Play()
+}
+
+// PlayPowerOffSequence plays the power down sound using the engine audio source
+func (a *AudioHandler) PlayPowerOffSequence() {
+	engine := a.sfx.mainSources[AUDIO_ENGINE]
+	engine._sfxType = _SFX_HINT_POWER_OFF
+	if engine.player != nil {
+		engine.player.Close()
+	}
+
+	engine.LoadSFX(a, "audio/sfx/power-off.ogg")
 	engine.player.Play()
 }
 

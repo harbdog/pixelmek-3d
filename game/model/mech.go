@@ -138,7 +138,8 @@ func (e *Mech) Update() bool {
 			// continue cooling down
 			break
 
-		case e.PowerOnTimer == 0 && !isOverHeated:
+		case e.powered == POWER_OFF_HEAT &&
+			!isOverHeated && e.PowerOnTimer == 0:
 			// set power on sequence to begin automatically after overheat status is cleared
 			e.SetPowered(POWER_ON)
 

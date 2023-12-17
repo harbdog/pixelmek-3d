@@ -771,6 +771,20 @@ func (g *Game) updateSprites() {
 					}
 				}
 
+				if mech.JumpJets() > 0 {
+					switch {
+					case mech.JumpJetsActive():
+						mechJumpFile, err := JumpJetSFXForMech(mech)
+						if err == nil {
+							g.audio.PlayEntityAudioLoop(g, mechJumpFile, mech, 5.0, 0.35)
+						}
+					case !mech.JumpJetsActive():
+						// TODO: stop jump jet audio loop if still playing
+						break
+					}
+
+				}
+
 			case VehicleSpriteType:
 				s := k.(*render.VehicleSprite)
 				if s.IsDestroyed() {

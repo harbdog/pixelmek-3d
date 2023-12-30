@@ -59,7 +59,7 @@ type BGMHandler struct {
 
 type SFXHandler struct {
 	mainSources   []*SFXSource
-	entitySources map[model.Entity]*SFXSource
+	entitySources map[model.Entity]*SFXSource // FIXME: use syncmap to avoid random panic
 	extSources    *queue.Priority[*SFXSource]
 	_extSFXCount  *sync.Map // map[string]float64
 }
@@ -327,6 +327,21 @@ func (a *AudioHandler) PlayLoopEntitySFX(sfxFile string, entity model.Entity, so
 	a.sfx.entitySources[entity] = source
 }
 
+// StopLoopEntitySFX stops given looping sound effect as emitted from an Entity object
+func (a *AudioHandler) StopLoopEntitySFX(sfxFile string, entity model.Entity) {
+	var source *SFXSource
+	for eObj, eSrc := range a.sfx.entitySources {
+		if eObj == entity {
+			source = eSrc
+			break
+		}
+	}
+
+	if source != nil {
+		source.Close()
+	}
+}
+
 // _updateExtSFXCount is used to keep track of duplicate sound effects being played to prioritize channel reuse
 func (s *SFXHandler) _updateExtSFXCount(sfxFile string, countDiff int) {
 	var newCount float64
@@ -475,6 +490,9 @@ func (a *AudioHandler) PauseSFX() {
 	for _, s := range a.sfx.mainSources {
 		s.Pause()
 	}
+	for _, s := range a.sfx.entitySources {
+		s.Pause()
+	}
 	for s := range a.sfx.extSources.Iterator() {
 		s.Pause()
 		a.sfx.extSources.Offer(s)
@@ -484,6 +502,9 @@ func (a *AudioHandler) PauseSFX() {
 // ResumeSFX resumes play of all sound effect sources
 func (a *AudioHandler) ResumeSFX() {
 	for _, s := range a.sfx.mainSources {
+		s.Resume()
+	}
+	for _, s := range a.sfx.entitySources {
 		s.Resume()
 	}
 	for s := range a.sfx.extSources.Iterator() {
@@ -706,4 +727,7 @@ func (a *AudioHandler) PlayEntityAudioLoop(g *Game, sfxFile string, entity model
 	}
 }
 
-// TODO: StopEntityAudioLoop
+// StopEntityAudioLoop stops audio emitted from an Entity object that may have been playing
+func (a *AudioHandler) StopEntityAudioLoop(g *Game, sfxFile string, entity model.Entity) {
+	g.audio.StopLoopEntitySFX(sfxFile, entity)
+}

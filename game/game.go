@@ -772,17 +772,17 @@ func (g *Game) updateSprites() {
 				}
 
 				if mech.JumpJets() > 0 {
-					switch {
-					case mech.JumpJetsActive():
-						mechJumpFile, err := JumpJetSFXForMech(mech)
-						if err == nil {
+					mechJumpFile, err := JumpJetSFXForMech(mech)
+					if err == nil {
+						switch {
+						case mech.JumpJetsActive() && !s.JetsPlaying:
+							s.JetsPlaying = true
 							g.audio.PlayEntityAudioLoop(g, mechJumpFile, mech, 5.0, 0.35)
+						case !mech.JumpJetsActive() && s.JetsPlaying:
+							g.audio.StopEntityAudioLoop(g, mechJumpFile, mech)
+							s.JetsPlaying = false
 						}
-					case !mech.JumpJetsActive():
-						// TODO: stop jump jet audio loop if still playing
-						break
 					}
-
 				}
 
 			case VehicleSpriteType:

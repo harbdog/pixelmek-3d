@@ -59,7 +59,7 @@ type BGMHandler struct {
 
 type SFXHandler struct {
 	mainSources   []*SFXSource
-	entitySources map[model.Entity]*SFXSource // FIXME: use syncmap to avoid random panic
+	entitySources *sync.Map // map[model.Entity]*SFXSource
 	extSources    *queue.Priority[*SFXSource]
 	_extSFXCount  *sync.Map // map[string]float64
 }
@@ -99,7 +99,7 @@ func NewAudioHandler() *AudioHandler {
 	a.sfxMap = &sync.Map{}
 	a.sfx = &SFXHandler{}
 	a.sfx.mainSources = make([]*SFXSource, _AUDIO_MAIN_SOURCE_COUNT)
-	a.sfx.entitySources = make(map[model.Entity]*SFXSource)
+	a.sfx.entitySources = &sync.Map{}
 
 	a.sfx.mainSources[AUDIO_INTERFACE] = NewSoundEffectSource(0.8)
 	// engine audio source file setup later since it is a looping ambient source
@@ -292,14 +292,14 @@ func (a *AudioHandler) PlayLoopEntitySFX(sfxFile string, entity model.Entity, so
 	}
 
 	// check if entity is already playing a looping source to update instead of playing as new source
-	// TODO: change to sync map to avoid panic during concurrent writes
 	var source *SFXSource
-	for eObj, eSrc := range a.sfx.entitySources {
-		if eObj == entity {
-			source = eSrc
-			break
+	a.sfx.entitySources.Range(func(k, v interface{}) bool {
+		if entity == k.(model.Entity) {
+			source = v.(*SFXSource)
+			return false
 		}
-	}
+		return true
+	})
 
 	// get and close the lowest priority source for reuse
 	// source, _ := a.sfx.extSources.Get()
@@ -324,21 +324,23 @@ func (a *AudioHandler) PlayLoopEntitySFX(sfxFile string, entity model.Entity, so
 	}
 
 	// store the sound effect against the Entity
-	a.sfx.entitySources[entity] = source
+	a.sfx.entitySources.Store(entity, source)
 }
 
 // StopLoopEntitySFX stops given looping sound effect as emitted from an Entity object
 func (a *AudioHandler) StopLoopEntitySFX(sfxFile string, entity model.Entity) {
 	var source *SFXSource
-	for eObj, eSrc := range a.sfx.entitySources {
-		if eObj == entity {
-			source = eSrc
-			break
+	a.sfx.entitySources.Range(func(k, v interface{}) bool {
+		if entity == k.(model.Entity) {
+			source = v.(*SFXSource)
+			return false
 		}
-	}
+		return true
+	})
 
-	if source != nil {
+	if source != nil && sfxFile == source._sfxFile {
 		source.Close()
+		source._sfxFile = ""
 	}
 }
 
@@ -490,9 +492,11 @@ func (a *AudioHandler) PauseSFX() {
 	for _, s := range a.sfx.mainSources {
 		s.Pause()
 	}
-	for _, s := range a.sfx.entitySources {
+	a.sfx.entitySources.Range(func(_, v interface{}) bool {
+		s := v.(*SFXSource)
 		s.Pause()
-	}
+		return true
+	})
 	for s := range a.sfx.extSources.Iterator() {
 		s.Pause()
 		a.sfx.extSources.Offer(s)
@@ -504,9 +508,11 @@ func (a *AudioHandler) ResumeSFX() {
 	for _, s := range a.sfx.mainSources {
 		s.Resume()
 	}
-	for _, s := range a.sfx.entitySources {
+	a.sfx.entitySources.Range(func(_, v interface{}) bool {
+		s := v.(*SFXSource)
 		s.Resume()
-	}
+		return true
+	})
 	for s := range a.sfx.extSources.Iterator() {
 		s.Resume()
 		a.sfx.extSources.Offer(s)

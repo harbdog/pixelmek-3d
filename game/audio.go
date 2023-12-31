@@ -478,9 +478,13 @@ func (a *AudioHandler) StopSFX() {
 	for _, s := range a.sfx.mainSources {
 		if s.player != nil {
 			s.player.Close()
-			//s.player = nil // do not want to have to reinitialize main sources
 		}
 	}
+	a.sfx.entitySources.Range(func(_, v interface{}) bool {
+		s := v.(*SFXSource)
+		s.Close()
+		return true
+	})
 	for s := range a.sfx.extSources.Iterator() {
 		s.Close()
 		a.sfx.extSources.Offer(s)

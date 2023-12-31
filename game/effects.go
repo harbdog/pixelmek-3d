@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 
+	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/harbdog/pixelmek-3d/game/model"
 	"github.com/harbdog/pixelmek-3d/game/render"
 	"github.com/harbdog/pixelmek-3d/game/resources/effects"
@@ -11,6 +12,8 @@ import (
 )
 
 var (
+	jumpJetEffect *render.EffectSprite
+
 	bloodEffects     map[string]*render.EffectSprite
 	explosionEffects map[string]*render.EffectSprite
 	fireEffects      map[string]*render.EffectSprite
@@ -25,20 +28,29 @@ func init() {
 }
 
 func (g *Game) loadSpecialEffects() {
+	// load the jump jet effect sprite template
+	jumpJetImg := _getEffectImageFromResource(effects.JumpJet)
+	jumpJetEffect = render.NewAnimatedEffect(effects.JumpJet, jumpJetImg, 1)
+
 	// load the blood effect sprite templates
-	g._loadEffectSpritesFromResourceList(effects.Blood, bloodEffects)
+	_loadEffectSpritesFromResourceList(effects.Blood, bloodEffects)
 
 	// load the explosion effect sprite templates
-	g._loadEffectSpritesFromResourceList(effects.Explosions, explosionEffects)
+	_loadEffectSpritesFromResourceList(effects.Explosions, explosionEffects)
 
 	// load the fire effect sprite templates
-	g._loadEffectSpritesFromResourceList(effects.Fires, fireEffects)
+	_loadEffectSpritesFromResourceList(effects.Fires, fireEffects)
 
 	// load the smoke effect sprite templates
-	g._loadEffectSpritesFromResourceList(effects.Smokes, smokeEffects)
+	_loadEffectSpritesFromResourceList(effects.Smokes, smokeEffects)
 }
 
-func (g *Game) _loadEffectSpritesFromResourceList(
+func _getEffectImageFromResource(r *model.ModelEffectResource) *ebiten.Image {
+	effectRelPath := fmt.Sprintf("%s/%s", model.EffectsResourceType, r.Image)
+	return getSpriteFromFile(effectRelPath)
+}
+
+func _loadEffectSpritesFromResourceList(
 	resourceMap map[string]*model.ModelEffectResource, spriteMap map[string]*render.EffectSprite,
 ) {
 	for key, fx := range resourceMap {
@@ -46,10 +58,7 @@ func (g *Game) _loadEffectSpritesFromResourceList(
 			continue
 		}
 		// load the blood effect sprite template
-		effectRelPath := fmt.Sprintf("%s/%s", model.EffectsResourceType, fx.Image)
-		effectImg := getSpriteFromFile(effectRelPath)
-
-		eSpriteTemplate := render.NewAnimatedEffect(fx, effectImg, 1)
+		eSpriteTemplate := render.NewAnimatedEffect(fx, _getEffectImageFromResource(fx), 1)
 		spriteMap[key] = eSpriteTemplate
 	}
 }

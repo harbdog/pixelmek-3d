@@ -712,6 +712,11 @@ func (g *Game) updateSprites() {
 					} else {
 						s.Update(g.player.Pos())
 					}
+
+					if sUnit.JumpJets() > 0 {
+						g.removeJumpJetEffect(s.Sprite)
+					}
+
 					g.spawnMechDestroyEffects(s)
 					break
 				}
@@ -745,7 +750,7 @@ func (g *Game) updateSprites() {
 						if s.MechAnimation() != render.MECH_ANIMATE_JUMP_JET || falling {
 							s.SetMechAnimation(render.MECH_ANIMATE_JUMP_JET, false)
 
-							// TODO: remove jump jet effect when jump jet no longer active
+							// spawn jump jet effect when first starting jump jet
 							g.spawnJumpJetEffect(s.Sprite)
 						}
 					} else if s.VelocityZ() < 0 {
@@ -753,6 +758,9 @@ func (g *Game) updateSprites() {
 						if s.MechAnimation() != render.MECH_ANIMATE_JUMP_JET || !falling {
 							// reverse jump jet animation for falling
 							s.SetMechAnimation(render.MECH_ANIMATE_JUMP_JET, true)
+
+							// remove jump jet effect since jump jet no longer active
+							g.removeJumpJetEffect(s.Sprite)
 						}
 					} else if s.Velocity() == 0 && s.VelocityZ() == 0 {
 						if s.MechAnimation() != render.MECH_ANIMATE_IDLE {

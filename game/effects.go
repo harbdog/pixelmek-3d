@@ -12,7 +12,8 @@ import (
 )
 
 var (
-	jumpJetEffect *render.EffectSprite
+	jumpJetEffect     *render.EffectSprite
+	attachedJJEffects map[*render.Sprite]*render.EffectSprite
 
 	bloodEffects     map[string]*render.EffectSprite
 	explosionEffects map[string]*render.EffectSprite
@@ -21,6 +22,7 @@ var (
 )
 
 func init() {
+	attachedJJEffects = make(map[*render.Sprite]*render.EffectSprite)
 	bloodEffects = make(map[string]*render.EffectSprite)
 	explosionEffects = make(map[string]*render.EffectSprite)
 	fireEffects = make(map[string]*render.EffectSprite)
@@ -31,6 +33,9 @@ func (g *Game) loadSpecialEffects() {
 	// load the jump jet effect sprite template
 	jumpJetImg := _getEffectImageFromResource(effects.JumpJet)
 	jumpJetEffect = render.NewAnimatedEffect(effects.JumpJet, jumpJetImg, math.MaxInt)
+	for s := range attachedJJEffects {
+		delete(attachedJJEffects, s)
+	}
 
 	// load the blood effect sprite templates
 	_loadEffectSpritesFromResourceList(effects.Blood, bloodEffects)
@@ -64,6 +69,12 @@ func _loadEffectSpritesFromResourceList(
 }
 
 func (g *Game) spawnJumpJetEffect(s *render.Sprite) {
+	_, found := attachedJJEffects[s]
+	if found {
+		// do not spawn another effect
+		return
+	}
+
 	jumpFx := jumpJetEffect.Clone()
 
 	jumpFx.SetScale(s.Scale())
@@ -74,6 +85,17 @@ func (g *Game) spawnJumpJetEffect(s *render.Sprite) {
 
 	// illuminate source sprite unit jump jetting
 	s.SetIlluminationPeriod(5000, 0.35)
+
+	// keep track of effect so only one is attached and can be deleted later
+	attachedJJEffects[s] = jumpFx
+}
+
+func (g *Game) removeJumpJetEffect(s *render.Sprite) {
+	jumpFx, found := attachedJJEffects[s]
+	if found {
+		g.sprites.deleteEffect(jumpFx)
+		delete(attachedJJEffects, s)
+	}
 }
 
 func (g *Game) spawnGenericDestroyEffects(s *render.Sprite, spawnFires bool) (duration int) {

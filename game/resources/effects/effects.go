@@ -24,8 +24,8 @@ func init() {
 		Image: "jump_jet_flame.png",
 		ImageSheet: &model.ModelResourceImageSheet{
 			Columns:       8,
-			Rows:          1,
-			AnimationRate: 4,
+			Rows:          8,
+			AnimationRate: 1,
 		},
 	}
 

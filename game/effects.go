@@ -30,7 +30,7 @@ func init() {
 func (g *Game) loadSpecialEffects() {
 	// load the jump jet effect sprite template
 	jumpJetImg := _getEffectImageFromResource(effects.JumpJet)
-	jumpJetEffect = render.NewAnimatedEffect(effects.JumpJet, jumpJetImg, 1)
+	jumpJetEffect = render.NewAnimatedEffect(effects.JumpJet, jumpJetImg, math.MaxInt)
 
 	// load the blood effect sprite templates
 	_loadEffectSpritesFromResourceList(effects.Blood, bloodEffects)
@@ -61,6 +61,19 @@ func _loadEffectSpritesFromResourceList(
 		eSpriteTemplate := render.NewAnimatedEffect(fx, _getEffectImageFromResource(fx), 1)
 		spriteMap[key] = eSpriteTemplate
 	}
+}
+
+func (g *Game) spawnJumpJetEffect(s *render.Sprite) {
+	jumpFx := jumpJetEffect.Clone()
+
+	jumpFx.SetScale(s.Scale())
+	jumpFx.AttachedTo = s
+	jumpFx.AttachedDepth = 0.01
+
+	g.sprites.addEffect(jumpFx)
+
+	// illuminate source sprite unit jump jetting
+	s.SetIlluminationPeriod(5000, 0.35)
 }
 
 func (g *Game) spawnGenericDestroyEffects(s *render.Sprite, spawnFires bool) (duration int) {

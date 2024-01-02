@@ -744,6 +744,9 @@ func (g *Game) updateSprites() {
 						falling := s.AnimationReversed()
 						if s.MechAnimation() != render.MECH_ANIMATE_JUMP_JET || falling {
 							s.SetMechAnimation(render.MECH_ANIMATE_JUMP_JET, false)
+
+							// TODO: remove jump jet effect when jump jet no longer active
+							g.spawnJumpJetEffect(s.Sprite)
 						}
 					} else if s.VelocityZ() < 0 {
 						falling := s.AnimationReversed()

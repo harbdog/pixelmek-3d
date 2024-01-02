@@ -25,7 +25,7 @@ func init() {
 		ImageSheet: &model.ModelResourceImageSheet{
 			Columns:       8,
 			Rows:          1,
-			AnimationRate: 4,
+			AnimationRate: 8,
 		},
 	}
 

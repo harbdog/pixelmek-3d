@@ -358,7 +358,7 @@ func (g *Game) releaseInputAction(a input.Action) {
 }
 
 func (g *Game) isInputActionJustReleased(a input.Action) bool {
-	// very simple justReleased method until implemented by ebitengine-input:
+	// FIXME: very simple justReleased method until implemented by ebitengine-input:
 	//     https://github.com/quasilyte/ebitengine-input/issues/25
 	v, ok := g.inputHeld[a]
 	if ok && !v {
